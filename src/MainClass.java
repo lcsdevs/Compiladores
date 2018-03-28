@@ -4,7 +4,7 @@ import java.io.InputStreamReader;
 
 public class MainClass {
     static BufferedReader archive;
-
+    static LexicalAnalysis lexicalAnalysis = new LexicalAnalysis();
     static void readArchive() {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String file = "";
@@ -28,6 +28,7 @@ public class MainClass {
     }
 
     public static void main(String[] args) throws Exception {
-        //readArchive();
+        readArchive();
+        lexicalAnalysis.tokenization(archive);
     }
 }
