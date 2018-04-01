@@ -64,7 +64,8 @@ public class SymbolTable {
     final byte ACOLCHETES = 35;
     final byte FCOLCHETES = 36;
     final byte DO = 37;
-    //final byte EOF = 37;
+    final byte CONST = 38;
+    //final byte EOF = 39;
 
     public SymbolTable() {
         table.put("id", new Symbol("id", ID, ++pos));
@@ -105,6 +106,7 @@ public class SymbolTable {
         table.put("[", new Symbol("[", ACOLCHETES, ++pos));
         table.put("]", new Symbol("]", FCOLCHETES, ++pos));
         table.put("do", new Symbol("do", DO, ++pos));
+        table.put("const", new Symbol("const", CONST, ++pos));
         //table.put("eof", new Symbol ( "eof" , EOF , ++pos ));
 
     }
