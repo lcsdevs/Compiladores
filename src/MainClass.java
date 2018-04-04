@@ -29,6 +29,8 @@ public class MainClass {
 
     public static void main(String[] args) throws Exception {
         readArchive();
-        lexicalAnalysis.tokenization(archive);
+        while(!lexicalAnalysis.eof){
+            lexicalAnalysis.tokenization(archive);
+        }
     }
 }

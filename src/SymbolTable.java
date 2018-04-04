@@ -110,7 +110,7 @@ public class SymbolTable {
     }
 
     public int search(String lex) {
-        lex = lex.toLowerCase();
+        //lex = lex.toLowerCase();
         Symbol s = table.get(lex);
         if (s != null) {
             return s.endereco;
@@ -122,7 +122,7 @@ public class SymbolTable {
 
     public Symbol getSimb(String lex) {
         //System.out.println(lex);
-        lex = lex.toLowerCase();
+        //lex = lex.toLowerCase();
         Symbol s = table.get(lex);
         if (s == null) {
             return (getSimb("k"));
@@ -132,9 +132,9 @@ public class SymbolTable {
     }
 
 
-    public int insert(String lex) {
-        lex = lex.toLowerCase();
-        table.put(lex, new Symbol(lex, ID, ++pos));
+    public int insert(String lex,byte tipo) {
+       // lex = lex.toLowerCase();
+        table.put(lex, new Symbol(lex,tipo, ++pos));
         return search(lex);
     }
 

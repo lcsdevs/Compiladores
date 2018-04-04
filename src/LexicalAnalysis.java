@@ -17,8 +17,9 @@ class LexicalAnalysis {
         int actualState = 0;
         int finalState = 17;
         lex = "";
-        final int string = 1, integer = 2, character = 3, hexadecimal = 4;
-        final int id = 1, value = 2, comment = 3;
+        final int id = 1, value = 2;
+        int tokenType = 0, valueType = 0;
+        int flagHexa = 0;
 
         while (actualState != finalState) {
             switch (actualState) {
@@ -32,24 +33,308 @@ class LexicalAnalysis {
 
                     if (c == '\n' || c == 11) {
                         line++;
+                        actualState = 0;
+                    } else if (c == 65535) {
+                        actualState = finalState;
+                        lex += c;
+                        eof = true;
+                        dev = false;
+                        archive.close();
                     } else if (c == 32 || c == 11 || c == 8 || c == 13 || c == 9) {
                         actualState = 0;
-                    }else if(c == '(' || c == ')' || c == ',' || c == '+' || c == '-' || c == '*'|| c == ';' || c == '%'
-                            || c == '[' || c == ']' || c == '='){
-                        lex+=c;
+                    } else if (c == '(' || c == ')' || c == ',' || c == '+' || c == '-' || c == '*' || c == ';' || c == '%'
+                            || c == '[' || c == ']' || c == '=') {
+                        lex += c;
                         actualState = finalState;
-                        System.out.println("Token Lido:"+lex);
-                }
+                         System.out.println("Token Lido:" + lex);
+                    } else if (c == '_') {
+                        lex += c;
+                        actualState = 1;
+                         System.out.println("Token Lido:" + lex);
+                    } else if (isLetter(c)) {
+                        lex += c;
+                        actualState = 3;
+                         System.out.println("Token Lido:" + lex);
+                    } else if (isDigit(c)) {
+                        lex += c;
+                        if (c == '0') {
+                            actualState = 4;
+                             System.out.println("Token Lido:" + lex);
+                        } else {
+                            actualState = 5;
+                              System.out.println("Token Lido:" + lex);
+                        }
+                    } else if (c == '>') {
+                        lex += c;
+                        actualState = 8;
+                        System.out.println("Token Lido:" + lex);
+                    } else if (c == '<') {
+                        lex += c;
+                        actualState = 9;
+                        System.out.println("Token Lido:" + lex);
+                    } else if (c == 39) {
+                        lex += c;
+                        actualState = 10;
+                        System.out.println("Token Lido:" + lex);
+                    } else if (c == 34) {
+                        lex += c;
+                        actualState = 12;
+                        System.out.println("Token Lido:" + lex);
+                    } else if (c == '/') {
+                        lex += c;
+                        actualState = 13;
+                        System.out.println("Token Lido:" + lex);
+                    }
+                    break;
+                case 1:
+                    c = (char) archive.read();
+                    tokenType = id;
+                    if (c == '_') {
+                        lex += c;
+                        actualState = 1;
+                         System.out.println("Token Lido:" + lex);
+                    } else if (isDigit(c) || isLetter(c)) {
+                        lex += c;
+                        actualState = 2;
+                         System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        eof = true;
+                        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
+                    }
+                    break;
+                case 2:
+                    c = (char) archive.read();
+                    tokenType = id;
+                    if (isLetter(c) || isDigit(c) || c == '_') {
+                        lex += c;
+                        actualState = 2;
+                        System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        dev = true;
+                        System.out.println("Token Lido:" + lex);
+                    }
+                    break;
+                case 3:
+                    c = (char) archive.read();
+                    tokenType = id;
+                    if (isLetter(c) || isDigit(c) || c == '_') {
+                        lex += c;
+                        actualState = 3;
+                         System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        dev = true;
+                        System.out.println("Token Lido:" + lex);
+                    }
+                    break;
+                case 4:
+                    c = (char) archive.read();
+                    if (isDigit(c) || isHexa(c)) {
+                        if (isDigit(c)) {
+                            flagHexa++;
+                        }
+                        lex += c;
+                        actualState = 6;
+                         System.out.println("Token Lido:" + lex);
+                    }
+                    break;
+                case 5:
+                    c = (char) archive.read();
+                    tokenType = value;
+                    if (isDigit(c)) {
+                        lex += c;
+                        actualState = 5;
+                         System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        dev = true;
+                        System.out.println("Token Lido:" + lex);
+                    }
+                    break;
+                case 6:
+                    c = (char) archive.read();
+                    if (isDigit(c) || isHexa(c)) {
+                        if (isDigit(c) && flagHexa == 1) {
+                            flagHexa++;
+                        }
+                        lex += c;
+                        actualState = 7;
+                         System.out.println("Token Lido:" + lex);
+                    } else if (flagHexa == 1) {
+                        lex += c;
+                        actualState = 5;
+                         System.out.println("Token Lido:" + lex);
+                    }
+                    break;
+                case 7:
+                    c = (char) archive.read();
+                    if (c == 'h') {
+                        lex += c;
+                        actualState = finalState;
+                         System.out.println("Token Lido:" + lex);
+                    } else if (flagHexa == 2) {
+                        lex += c;
+                        actualState = 5;
+                         System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
+                        System.exit(0);
+                    }
+                    break;
+                case 8:
+                    c = (char) archive.read();
+                    if (c == '=') {
+                        lex += c;
+                        actualState = finalState;
+                         System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        System.out.println("Token Lido:" + lex);
+                        dev = true;
+                    }
+                    break;
+                case 9:
+                    c = (char) archive.read();
+                    if (c == '>' || c == '=' || c == '-') {
+                        lex += c;
+                        System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        dev = true;
+                    }
+                    break;
+                case 10:
+                    c = (char) archive.read();
+                    tokenType = value;
+                    if (isDigit(c) || isLetter(c)) {
+                        lex += c;
+                        actualState = 11;
+                        System.out.println("Token Lido:" + lex);
+                    }
+                    break;
+                case 11:
+                    c = (char) archive.read();
+                    if (c == 39) {
+                        lex += c;
+                        tokenType = value;
+                        actualState = finalState;
+                        System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
+                        System.exit(0);
+                        System.out.println("Token Lido:" + lex);
+                    }
+                    break;
+                case 12:
+                    c = (char) archive.read();
+                    tokenType = value;
+                    if (isDigit(c) || isLetter(c)) {
+                        lex += c;
+                        actualState = 12;
+                        System.out.println("Token Lido:" + lex);
+                    } else if (c == 34) {
+                        actualState = finalState;
+                        System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
+                        System.exit(0);
+                    }
+                    break;
+                case 13:
+                    c = (char) archive.read();
+                    if (c == '*') {
+                        lex += c;
+                        actualState = 14;
+                        System.out.println("Token Lido:" + lex);
+                    } else {
+                        actualState = finalState;
+                        dev = true;
+                        System.out.println("Token Lido:" + lex);
+                    }
+                    break;
 
+                case 14:
+                    c = (char) archive.read();
+                    if (c == '*') {
+                        actualState = 15;
+                        System.out.println("Token Lido:" + lex);
+                    } else if (c == 13) {
+                        actualState = 14;
+                        line++;
+                    } else if (c == -1 || c == 65535) {
+                        eof = true;
+                        System.err.println(line + ":Fim de arquivo nao esperado");
+                        System.exit(0);
+                    } else {
+                        actualState = 14;
+                    }
+                    break;
+                case 15:
+                    c = (char) archive.read();
+                    if (c == '/') {
+                        actualState = 0;
+                        lex = "";
+                        System.out.println("- Um comentario foi lido. Nao e token.");
+                    } else if (c == '*') {
+                        actualState = 15;
+                    } else if (c == -1 || c == 65535) {
+                        eof = true;
+                        System.err.println(line + ":Fim de arquivo nao esperado");
+                        System.exit(0);
+                    } else {
+                        actualState = 14;
+                    }
+                    break;
             }
         }
 
-        if(!eof){
-            if(symbolTable.search(lex.toLowerCase()) != -1){
+        if (eof == false) {
+            if (symbolTable.search(lex) != -1) {
                 symbol = symbolTable.getSimb(lex);
-                System.out.println(""+symbolTable.search(lex));
+                System.out.println("Já está na tabela: " + symbol.toString());
+            } else {
+                if (tokenType == id) {
+                    lex = lex.toLowerCase();
+                    symbolTable.insert(lex, symbolTable.ID);
+                    symbol = symbolTable.getSimb(lex);
+                    System.out.println("Inseriu ID = " + symbol.toString());
+                } else if (tokenType == value) {
+                    lex = lex.toLowerCase();
+                    symbolTable.insert(lex, symbolTable.VALOR);
+                    symbol = symbolTable.getSimb(lex);
+                    System.out.println("Inseriu Valor = " + symbol.toString());
+                }
             }
         }
         return symbol;
+    }
+
+    public static boolean isDigit(char letter) {
+        boolean isDigit = false;
+        if (letter >= '0' && letter <= '9') {
+            isDigit = true;
+        }
+        return isDigit;
+    }
+
+    public static boolean isLetter(char letter) {
+        boolean isLetter = false;
+        if (letter >= 'a' && letter <= 'z' || letter >= 'A' && letter <= 'Z') {
+            isLetter = true;
+        }
+        return isLetter;
+    }
+
+    public static boolean isHexa(char letter) {
+        boolean isHexa = false;
+        if (letter >= 'a' && letter <= 'f' || letter >= 'A' && letter <= 'F') {
+            isHexa = true;
+        }
+        return isHexa;
     }
 }
