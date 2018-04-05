@@ -313,11 +313,6 @@ public class SyntaticAnalysis {
             }
         }
 
-        public static void main(String[]args){
-
-            //S(tok,analisadorLexico);
-
-        }
     }
 
 

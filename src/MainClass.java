@@ -32,5 +32,6 @@ public class MainClass {
         while(!lexicalAnalysis.eof){
             lexicalAnalysis.tokenization(archive);
         }
+        System.out.println("Compilado com sucesso");
     }
 }

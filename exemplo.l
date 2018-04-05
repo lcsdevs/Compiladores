@@ -1,4 +1,4 @@
-/* Exemplo de Programa na linguagem L */
+/* Exemplo de Programa na linguagem L int */
 
 int n;
 char nome[40];
@@ -6,7 +6,7 @@ final MAXITER=10;
 
 /* Programa Principal */
 
-  wRite(“Digite seu nome: “);
+  wRite("Digite seu nome: ");
   readln(nome);
   for n=1 to MAXITER do begin
     writeln("Ola' ",nome);
