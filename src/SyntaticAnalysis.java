@@ -1,7 +1,19 @@
+/*Alunos
+Luciano Custodio
+Pedro Nadu
+ */
+
+import java.io.BufferedReader;
+
+
 public class SyntaticAnalysis {
 
         byte tok;
-       // LexicalAnalysis analisadorLexico;
+        //Symbol[] simbolos;
+        //int pos;
+        //String nomArq;
+        BufferedReader archive;
+        LexicalAnalysis analisadorLexico;
 
     final byte ID = 0;
     final byte VALOR = 1;
@@ -41,13 +53,22 @@ public class SyntaticAnalysis {
     final byte ACOLCHETES = 35;
     final byte FCOLCHETES = 36;
     final byte DO = 37;
-    final byte CONST = 38;
     //final byte EOF = 39;
 
+    public SyntaticAnalysis(BufferedReader archive){
+        try {
+            this.archive = archive;
+        }catch (Exception e){
+            System.out.println("Erro!");
+        }
+
+
+    }
+
         //casaToken
-        public void casaTok(byte tokEsperado){
+        public void casaTok(byte tokEsperado)throws Exception {
             if(tokEsperado == tok){
-               // LexicalAnalysis.LexicalAnalysis(leitor, tabela);
+                analisadorLexico.tokenization(archive);
             }
             else {
                 System.out.println("token nao esperado [" + tok + "].");
@@ -55,9 +76,11 @@ public class SyntaticAnalysis {
             }
         }
 
-
+        public void startAnalise() throws Exception{
+                S();
+        }
         //proc S
-        public void S (){
+        public void S () throws Exception{
             while(tok == INT || tok == CHAR || tok == FINAL){
                 D();
             }
@@ -67,7 +90,7 @@ public class SyntaticAnalysis {
         }
 
         //proc D
-        public void D() {
+        public void D() throws Exception{
             if (tok == INT || tok == CHAR) {
 
                 TIPO();
@@ -88,7 +111,7 @@ public class SyntaticAnalysis {
         }
 
         //proc TIPO
-        public void TIPO() {
+        public void TIPO() throws Exception {
             if (tok == INT) {
                 casaTok(INT);
             } else if (tok == CHAR) {
@@ -97,7 +120,7 @@ public class SyntaticAnalysis {
         }
 
         //proc D1
-        public void D1() {
+        public void D1() throws Exception {
             casaTok(ID);
             if (tok == ATRIB) {
                 casaTok(ATRIB);
@@ -128,7 +151,7 @@ public class SyntaticAnalysis {
             }
 
         //proc C
-        public void C(){
+        public void C() throws Exception {
             while(tok == ID || tok == FOR || tok == IF || tok == DOTCOMMA || tok == READLN || tok == WRITE || tok == WRITELN){
                  if(tok == FOR) {
                      casaTok(FOR);
@@ -197,7 +220,7 @@ public class SyntaticAnalysis {
         }
 
         //proc C1
-        public void C1() {
+        public void C1() throws Exception {
             if (tok == BEGIN) {
                 casaTok(BEGIN);
                 C();
@@ -212,7 +235,7 @@ public class SyntaticAnalysis {
         }
 
         //Proc Exp
-        public void Exp(){
+        public void Exp()throws Exception{
             ExpS();
             if(tok == LESS || tok == GREAT || tok == LESSOREQUAL ||  tok == GREATOREQUAL || tok == EQUAL || tok == DIFFERENT){
                 if (tok == LESS) {
@@ -238,7 +261,7 @@ public class SyntaticAnalysis {
         }
 
         //proc ExpS
-        public void ExpS(){
+        public void ExpS() throws Exception {
             if(tok == PLUS){
                 casaTok(PLUS);
             }
@@ -261,7 +284,7 @@ public class SyntaticAnalysis {
         }
 
         //Proc T
-        public void T(){
+        public void T() throws Exception {
             F();
             while(tok == STAR || tok == SLASH || tok == PERCENT || tok == AND ){
                 if(tok == STAR){
@@ -281,7 +304,7 @@ public class SyntaticAnalysis {
         }
 
         //Proc F
-        public void F(){
+        public void F() throws Exception {
             if(tok == APARENTESES) {
                 casaTok(APARENTESES);
                 Exp();
