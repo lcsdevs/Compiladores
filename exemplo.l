@@ -2,12 +2,12 @@
 
 int n;
 char nome[40];
-final MAXITER=10;
+final MAXITER<-10;
 
-/* Programa Principal */
+/* Programa Principal */ 
 
-  wRite("Digite seu nome: ");
+  write("Digite seu nome: ");
   readln(nome);
-  for n=1 to MAXITER do begin
+  for n<-1 to MAXITER do begin
     writeln("Ola' ",nome);
   end

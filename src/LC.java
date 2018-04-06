@@ -2,7 +2,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 
-public class MainClass {
+public class LC {
+    public static Symbol simboloCorrente;
     static BufferedReader archive;
     static LexicalAnalysis lexicalAnalysis = new LexicalAnalysis();
 
@@ -27,13 +28,30 @@ public class MainClass {
             readArchive();
         }
     }
-    static SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis(archive);
+
     public static void main(String[] args) throws Exception {
+        Symbol[] bufferDeSimbolos = new Symbol[10000];
+        Symbol[] simbolos = null;
+        int nSimbolos = 0;
+
         readArchive();
+        simboloCorrente = lexicalAnalysis.tokenization(archive);
+
         while(!lexicalAnalysis.eof){
-            syntaticAnalysis.startAnalise();
-            //lexicalAnalysis.tokenization(archive);
+            bufferDeSimbolos[nSimbolos] = simboloCorrente;
+            nSimbolos++;
+            simboloCorrente = lexicalAnalysis.tokenization(archive);
         }
+        //adicionando o eof no aray de simbolos
+        bufferDeSimbolos[nSimbolos] = simboloCorrente;
+        nSimbolos++;
+        simbolos = new Symbol[nSimbolos];
+        for (int i=0; i<nSimbolos; i++){
+            simbolos[i] = bufferDeSimbolos[i];
+        }
+        bufferDeSimbolos = null;
+        SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis(simbolos, archive);
+        syntaticAnalysis.startAnalise();
         System.out.println("Compilado com sucesso");
     }
 }

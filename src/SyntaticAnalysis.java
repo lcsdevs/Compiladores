@@ -4,16 +4,16 @@ Pedro Nadu
  */
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 
 
 public class SyntaticAnalysis {
 
         byte tok;
-        //Symbol[] simbolos;
-        //int pos;
-        //String nomArq;
         BufferedReader archive;
-        LexicalAnalysis analisadorLexico;
+        Symbol[] simbolos;
+        int pos;
+
 
     final byte ID = 0;
     final byte VALOR = 1;
@@ -53,27 +53,36 @@ public class SyntaticAnalysis {
     final byte ACOLCHETES = 35;
     final byte FCOLCHETES = 36;
     final byte DO = 37;
-    //final byte EOF = 39;
+    final byte EOF = 39;
 
-    public SyntaticAnalysis(BufferedReader archive){
+    public SyntaticAnalysis(Symbol[] simbolos, BufferedReader archive){
+
         try {
             this.archive = archive;
         }catch (Exception e){
             System.out.println("Erro!");
         }
+        this.simbolos = simbolos;
+        this.tok = simbolos[0].token;
+        this.pos = 0;
 
 
     }
 
         //casaToken
-        public void casaTok(byte tokEsperado)throws Exception {
-            if(tokEsperado == tok){
-                analisadorLexico.tokenization(archive);
-            }
-            else {
+        public void casaTok(byte tokEsperado) {
+        try {
+            if (tokEsperado == tok) {
+                tok = simbolos[++pos].token;
+            } else {
+
                 System.out.println("token nao esperado [" + tok + "].");
                 System.exit(0);
             }
+        } catch (NullPointerException e){
+            System.out.println("Fim de aquivo não esperado");
+            System.exit(1);
+        }
         }
 
         public void startAnalise() throws Exception{
@@ -98,6 +107,7 @@ public class SyntaticAnalysis {
                 while (tok == ID) {
                     D1();
                 }
+                casaTok(DOTCOMMA);
             } else if (tok == FINAL) {
                 casaTok(FINAL);
                 casaTok(ID);
@@ -128,7 +138,7 @@ public class SyntaticAnalysis {
                    casaTok(MINUS);
                 }
                     casaTok(VALOR);
-                } else {
+                } else if(tok == ACOLCHETES){
                     casaTok(ACOLCHETES);
                     casaTok(VALOR);
                     casaTok(FCOLCHETES);
