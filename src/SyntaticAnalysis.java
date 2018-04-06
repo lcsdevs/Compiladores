@@ -75,12 +75,6 @@ public class SyntaticAnalysis {
                 while (tok == ID) {
                     D1();
                 }
-                casaTok(DOTCOMMA);
-                while (tok == ID) {
-                    if (tok == ID) {
-                        D1();
-                    }
-                }
             } else if (tok == FINAL) {
                 casaTok(FINAL);
                 casaTok(ID);
@@ -89,6 +83,7 @@ public class SyntaticAnalysis {
                     casaTok(MINUS);
                 }
                 casaTok(VALOR);
+                casaTok(DOTCOMMA);
             }
         }
 
@@ -104,24 +99,21 @@ public class SyntaticAnalysis {
         //proc D1
         public void D1() {
             casaTok(ID);
-            if (tok == ATRIB || tok == ACOLCHETES) {
-                if (tok == ATRIB) {
-                    casaTok(ATRIB);
-                    if (tok == MINUS) {
-                        casaTok(MINUS);
-                    }
+            if (tok == ATRIB) {
+                casaTok(ATRIB);
+                if (tok == MINUS) {
+                   casaTok(MINUS);
+                }
                     casaTok(VALOR);
                 } else {
                     casaTok(ACOLCHETES);
                     casaTok(VALOR);
                     casaTok(FCOLCHETES);
                 }
-            }
-            while (tok == COMMA) {
+            while(tok == COMMA) {
                 casaTok(COMMA);
                 casaTok(ID);
-                if (tok == ATRIB || tok == ACOLCHETES) {
-                    if (tok == ATRIB) {
+                if (tok == ATRIB) {
                         casaTok(ATRIB);
                         if (tok == MINUS) {
                             casaTok(MINUS);
@@ -134,7 +126,7 @@ public class SyntaticAnalysis {
                     }
                 }
             }
-        }
+
         //proc C
         public void C(){
             while(tok == ID || tok == FOR || tok == IF || tok == DOTCOMMA || tok == READLN || tok == WRITE || tok == WRITELN){
@@ -147,7 +139,7 @@ public class SyntaticAnalysis {
                      Exp();
                      if (tok == STEP) {
                          casaTok(STEP);
-                         casaTok(CONST);
+                         casaTok(VALOR);
                      }
                      casaTok(DO);
                      C1();
@@ -250,7 +242,7 @@ public class SyntaticAnalysis {
             if(tok == PLUS){
                 casaTok(PLUS);
             }
-            else {
+            else if (tok == MINUS){
                 casaTok(MINUS);
             }
             T();
@@ -278,7 +270,6 @@ public class SyntaticAnalysis {
                 else if(tok == SLASH){
                     casaTok(SLASH);
                 }
-
                 else if(tok == PERCENT){
                     casaTok(PERCENT);
                 }
@@ -300,8 +291,8 @@ public class SyntaticAnalysis {
                 casaTok(NOT);
                 F();
             }
-            else if(tok == CONST){
-                casaTok(CONST);
+            else if(tok == VALOR){
+                casaTok(VALOR);
             }
             else{
                 casaTok(ID);
