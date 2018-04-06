@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 public class MainClass {
     static BufferedReader archive;
     static LexicalAnalysis lexicalAnalysis = new LexicalAnalysis();
+
     static void readArchive() {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String file = "";
@@ -26,11 +27,12 @@ public class MainClass {
             readArchive();
         }
     }
-
+    static SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis(archive);
     public static void main(String[] args) throws Exception {
         readArchive();
         while(!lexicalAnalysis.eof){
-            lexicalAnalysis.tokenization(archive);
+            syntaticAnalysis.startAnalise();
+            //lexicalAnalysis.tokenization(archive);
         }
         System.out.println("Compilado com sucesso");
     }
