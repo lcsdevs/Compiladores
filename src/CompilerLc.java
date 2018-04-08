@@ -2,10 +2,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 
-public class LC {
-    public static Symbol simboloCorrente;
+public class CompilerLc {
     static BufferedReader archive;
-    static LexicalAnalysis lexicalAnalysis = new LexicalAnalysis();
+    static SyntaticAnalysis syntaticAnalysis = syntaticAnalysis = new SyntaticAnalysis();
+    ;
 
     static void readArchive() {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -30,28 +30,13 @@ public class LC {
     }
 
     public static void main(String[] args) throws Exception {
-        Symbol[] bufferDeSimbolos = new Symbol[10000];
-        Symbol[] simbolos = null;
-        int nSimbolos = 0;
-
-        readArchive();
-        simboloCorrente = lexicalAnalysis.tokenization(archive);
-
-        while(!lexicalAnalysis.eof){
-            bufferDeSimbolos[nSimbolos] = simboloCorrente;
-            nSimbolos++;
-            simboloCorrente = lexicalAnalysis.tokenization(archive);
+        while (!syntaticAnalysis.lexicalAnalysis.eof) {
+            try {
+                readArchive();
+                syntaticAnalysis.startParsing(archive);
+            } catch (Exception e) {
+                System.err.println("Erro" + e.getMessage());
+            }
         }
-        //adicionando o eof no aray de simbolos
-        bufferDeSimbolos[nSimbolos] = simboloCorrente;
-        nSimbolos++;
-        simbolos = new Symbol[nSimbolos];
-        for (int i=0; i<nSimbolos; i++){
-            simbolos[i] = bufferDeSimbolos[i];
-        }
-        bufferDeSimbolos = null;
-        SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis(simbolos, archive);
-        syntaticAnalysis.startAnalise();
-        System.out.println("Compilado com sucesso");
     }
 }

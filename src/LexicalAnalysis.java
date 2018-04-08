@@ -259,7 +259,7 @@ class LexicalAnalysis {
         }
 
         if (eof == false) {
-            if (symbolTable.search(lex) != -1) {
+            if (symbolTable.search(lex) != null) {
                 symbol = symbolTable.getSimb(lex);
             } else {
                 if (tokenType == id) {
@@ -270,6 +270,7 @@ class LexicalAnalysis {
                     lex = lex.toLowerCase();
                     symbolTable.insert(lex, symbolTable.VALOR);
                     symbol = symbolTable.getSimb(lex);
+                    System.out.println("Inseriu o valor"+symbol);
                 }
             }
         }

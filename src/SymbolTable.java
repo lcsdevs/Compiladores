@@ -13,6 +13,13 @@ class Symbol {
         this.endereco = endereco;
     }
 
+    public byte getSymbol(){
+        return this.token;
+    }
+
+    public String getLexema(){
+        return this.lexema;
+    }
     public String toString() {
         return this.lexema;
     }
@@ -109,20 +116,20 @@ public class SymbolTable {
 
     }
 
-    public int search(String lex) {
+    public Integer search(String lex) {
         //lex = lex.toLowerCase();
         Symbol s = table.get(lex);
         if (s != null) {
             return s.endereco;
         } else {
             //System.out.println("Simbolo Inexistente");
-            return -1;
+            return null;
         }
     }
 
     public Symbol getSimb(String lex) {
         //System.out.println(lex);
-        //lex = lex.toLowerCase();
+        lex = lex.toLowerCase();
         Symbol s = table.get(lex);
         if (s == null) {
             return (getSimb("k"));

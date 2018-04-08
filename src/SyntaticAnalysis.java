@@ -1,342 +1,440 @@
-/*Alunos
-Luciano Custodio
-Pedro Nadu
- */
-
 import java.io.BufferedReader;
-import java.io.FileReader;
-
+import java.io.IOException;
 
 public class SyntaticAnalysis {
-
-        byte tok;
-        BufferedReader archive;
-        Symbol[] simbolos;
-        int pos;
-
-
-    final byte ID = 0;
-    final byte VALOR = 1;
-    final byte CHAR = 2;
-    final byte INT = 3;
-    final byte FINAL = 4;
-    final byte FOR = 5;
-    final byte IF = 6;
-    final byte EQUAL = 7;
-    final byte ELSE = 8;
-    final byte AND = 9;
-    final byte OR = 10;
-    final byte NOT = 11;
-    final byte ATRIB = 12;
-    final byte TO = 13;
-    final byte APARENTESES = 14;
-    final byte FPARENTESES = 15;
-    final byte LESS = 16;
-    final byte GREAT = 17;
-    final byte DIFFERENT = 18;
-    final byte GREATOREQUAL = 19;
-    final byte LESSOREQUAL = 20;
-    final byte COMMA = 21;
-    final byte PLUS = 22;
-    final byte MINUS = 23;
-    final byte STAR = 24;
-    final byte SLASH = 25;
-    final byte DOTCOMMA = 26;
-    final byte BEGIN = 27;
-    final byte END = 28;
-    final byte THEN = 29;
-    final byte READLN = 30;
-    final byte STEP = 31;
-    final byte WRITE = 32;
-    final byte WRITELN = 33;
-    final byte PERCENT = 34;
-    final byte ACOLCHETES = 35;
-    final byte FCOLCHETES = 36;
-    final byte DO = 37;
-    final byte EOF = 39;
-
-    public SyntaticAnalysis(Symbol[] simbolos, BufferedReader archive){
-
-        try {
-            this.archive = archive;
-        }catch (Exception e){
-            System.out.println("Erro!");
-        }
-        this.simbolos = simbolos;
-        this.tok = simbolos[0].token;
-        this.pos = 0;
-
-
+    LexicalAnalysis lexicalAnalysis;
+    SymbolTable symbolTable;
+    Symbol actualSymbol;
+    BufferedReader in;
+   public SyntaticAnalysis(){
+        lexicalAnalysis = new LexicalAnalysis();
+        symbolTable = new SymbolTable();
     }
 
-        //casaToken
-        public void casaTok(byte tokEsperado) {
-        try {
-            if (tokEsperado == tok) {
-                tok = simbolos[++pos].token;
-            } else {
+    public void startParsing(BufferedReader archive) throws Exception{
+        actualSymbol = lexicalAnalysis.tokenization(archive);
+        this.in = archive;
+        if(actualSymbol == null){
+            actualSymbol = lexicalAnalysis.tokenization(archive);
+        }
+        S();
+    }
 
-                System.out.println("token nao esperado [" + tok + "].");
-                System.exit(0);
-            }
-        } catch (NullPointerException e){
-            System.out.println("Fim de aquivo não esperado");
+
+    //casaToken
+    public void casaToken(byte tokEsperado) throws IOException {
+        try {
+           if(actualSymbol != null){
+               System.out.println("Token atual ct:"+actualSymbol.toString());
+               if(actualSymbol.getSymbol() == tokEsperado){
+                   actualSymbol = lexicalAnalysis.tokenization(in);
+               }else{
+                   if(lexicalAnalysis.eof){
+                       System.err.println(lexicalAnalysis.line + ":Fim de arquivo nao esperado.");
+                       System.exit(0);
+                   }else{
+                       System.err.println(lexicalAnalysis.line + ":Token nao esperado: " + actualSymbol.getLexema());
+                       System.exit(0);
+                   }
+               }
+           }
+        } catch (NullPointerException e) {
+            System.err.println("Casa Token: " + e.toString());
             System.exit(1);
         }
+    }
+
+
+    //proc S
+    public void S() throws Exception {
+        while (actualSymbol.getSymbol() == symbolTable.INT || actualSymbol.getSymbol() == symbolTable.CHAR
+                || actualSymbol.getSymbol() == symbolTable.FINAL) {
+            D();
         }
 
-        public void startAnalise() throws Exception{
-                S();
+        while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR || actualSymbol.getSymbol() == symbolTable.IF
+                || actualSymbol.getSymbol() == symbolTable.DOTCOMMA || actualSymbol.getSymbol() == symbolTable.READLN ||
+                actualSymbol.getSymbol() == symbolTable.WRITE || actualSymbol.getSymbol() == symbolTable.WRITELN
+                ) {
+            C();
         }
-        //proc S
-        public void S () throws Exception{
-            while(tok == INT || tok == CHAR || tok == FINAL){
-                D();
-            }
-            while(tok == ID || tok == FOR || tok ==IF || tok == DOTCOMMA || tok == READLN || tok == WRITE || tok == WRITELN){
-                C();
-            }
-        }
+    }
 
-        //proc D
-        public void D() throws Exception{
-            if (tok == INT || tok == CHAR) {
-
-                TIPO();
+    //proc D
+    public void D() throws Exception {
+        if (actualSymbol.getSymbol() == symbolTable.INT || actualSymbol.getSymbol() == symbolTable.CHAR) {
+            TIPO();
+            D1();
+            while (actualSymbol.getSymbol() == symbolTable.ID) {
                 D1();
-                while (tok == ID) {
-                    D1();
-                }
-                casaTok(DOTCOMMA);
-            } else if (tok == FINAL) {
-                casaTok(FINAL);
-                casaTok(ID);
-                casaTok(ATRIB);
-                if (tok == MINUS) {
-                    casaTok(MINUS);
-                }
-                casaTok(VALOR);
-                casaTok(DOTCOMMA);
             }
+            casaToken(symbolTable.DOTCOMMA);
+        } else if (actualSymbol.getSymbol() == symbolTable.FINAL) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.FINAL);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.ID);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.ATRIB);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            if (actualSymbol.getSymbol() == symbolTable.MINUS) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.MINUS);
+            }
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.VALOR);
+            System.out.println("Token atual1:"+actualSymbol.toString());
+            casaToken(symbolTable.DOTCOMMA);
+            System.out.println("Token atual:"+actualSymbol.toString());
         }
+    }
 
-        //proc TIPO
-        public void TIPO() throws Exception {
-            if (tok == INT) {
-                casaTok(INT);
-            } else if (tok == CHAR) {
-                casaTok(CHAR);
-            }
+    //proc TIPO
+    public void TIPO() throws Exception {
+        if (actualSymbol.getSymbol() == symbolTable.INT) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.INT);
+            System.out.println("Token atual:"+actualSymbol.toString());
+        } else if (actualSymbol.getSymbol() == symbolTable.CHAR) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.CHAR);
+            System.out.println("Token atual:"+actualSymbol.toString());
         }
+    }
 
-        //proc D1
-        public void D1() throws Exception {
-            casaTok(ID);
-            if (tok == ATRIB) {
-                casaTok(ATRIB);
-                if (tok == MINUS) {
-                   casaTok(MINUS);
-                }
-                    casaTok(VALOR);
-                } else if(tok == ACOLCHETES){
-                    casaTok(ACOLCHETES);
-                    casaTok(VALOR);
-                    casaTok(FCOLCHETES);
-                }
-            while(tok == COMMA) {
-                casaTok(COMMA);
-                casaTok(ID);
-                if (tok == ATRIB) {
-                        casaTok(ATRIB);
-                        if (tok == MINUS) {
-                            casaTok(MINUS);
-                        }
-                        casaTok(VALOR);
-                    } else {
-                        casaTok(ACOLCHETES);
-                        casaTok(VALOR);
-                        casaTok(FCOLCHETES);
-                    }
-                }
+    //proc D1
+    public void D1() throws Exception {
+        System.out.println("Token atual:"+actualSymbol.toString());
+        casaToken(symbolTable.ID);
+        System.out.println("Token atual:"+actualSymbol.toString());
+        if (actualSymbol.getSymbol() == symbolTable.ATRIB) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.ATRIB);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            if (actualSymbol.getSymbol() == symbolTable.MINUS) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.MINUS);
+                System.out.println("Token atual:"+actualSymbol.toString());
             }
-
-        //proc C
-        public void C() throws Exception {
-            while(tok == ID || tok == FOR || tok == IF || tok == DOTCOMMA || tok == READLN || tok == WRITE || tok == WRITELN){
-                 if(tok == FOR) {
-                     casaTok(FOR);
-                     casaTok(ID);
-                     casaTok(ATRIB);
-                     Exp();
-                     casaTok(TO);
-                     Exp();
-                     if (tok == STEP) {
-                         casaTok(STEP);
-                         casaTok(VALOR);
-                     }
-                     casaTok(DO);
-                     C1();
-                 }
-                 else if( tok == IF) {
-                     casaTok(IF);
-                     Exp();
-                     casaTok(THEN);
-                     C1();
-                     if (tok == ELSE) {
-                         casaTok(ELSE);
-                         C1();
-                     }
-                 }
-                 else if(tok == READLN){
-                     casaTok(READLN);
-                     casaTok(APARENTESES);
-                     casaTok(ID);
-                     casaTok(FPARENTESES);
-                     casaTok(DOTCOMMA);
-                 }
-
-                 else if( tok == WRITE){
-                     casaTok(WRITE);
-                     casaTok(APARENTESES);
-                     Exp();
-                     while(tok == COMMA){
-                         casaTok(COMMA);
-                         Exp();
-                     }
-                     casaTok(FPARENTESES);
-                     casaTok(DOTCOMMA);
-                 }
-                 else if( tok == WRITELN){
-                     casaTok(WRITELN);
-                     casaTok(APARENTESES);
-                     Exp();
-                     while(tok == COMMA){
-                         casaTok(COMMA);
-                         Exp();
-                     }
-                     casaTok(FPARENTESES);
-                     casaTok(DOTCOMMA);
-                 }
-                else if(tok == ID){
-                    casaTok(ID);
-                    casaTok(ATRIB);
-                    Exp();
-                    casaTok(DOTCOMMA);
-                }
-                else if(tok == DOTCOMMA){
-                    casaTok(DOTCOMMA);
-                }
-            }
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.VALOR);
+            System.out.println("Token atual:"+actualSymbol.toString());
+        } else if (actualSymbol.getSymbol() == symbolTable.ACOLCHETES) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.ACOLCHETES);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.VALOR);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.FCOLCHETES);
+            System.out.println("Token atual:"+actualSymbol.toString());
         }
-
-        //proc C1
-        public void C1() throws Exception {
-            if (tok == BEGIN) {
-                casaTok(BEGIN);
-                C();
-                while (tok == ID || tok == FOR || tok == IF || tok == DOTCOMMA || tok == READLN || tok == WRITE || tok == WRITELN) {
-                    C();
+        while (actualSymbol.getSymbol() == symbolTable.COMMA) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.COMMA);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.ID);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            if (actualSymbol.getSymbol() == symbolTable.ATRIB) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.ATRIB);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                if (actualSymbol.getSymbol() == symbolTable.MINUS) {
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                    casaToken(symbolTable.MINUS);
+                    System.out.println("Token atual:"+actualSymbol.toString());
                 }
-                casaTok(END);
-
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.VALOR);
+                System.out.println("Token atual:"+actualSymbol.toString());
             } else {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.ACOLCHETES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.VALOR);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.FCOLCHETES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            }
+        }
+    }
+
+    //proc C
+    public void C() throws Exception {
+        System.out.println("Token atual:"+actualSymbol.toString());
+        while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+                || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+                actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+                actualSymbol.getSymbol() == symbolTable.WRITELN) {
+            if (actualSymbol.getSymbol() == symbolTable.FOR) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.FOR);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.ID);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.ATRIB);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                Exp();
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.TO);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                Exp();
+                System.out.println("Token atual:"+actualSymbol.toString());
+                if (actualSymbol.getSymbol() == symbolTable.STEP) {
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                    casaToken(symbolTable.STEP);
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                    casaToken(symbolTable.VALOR);
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                }
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.DO);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                C1();
+            } else if (actualSymbol.getSymbol() == symbolTable.IF) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.IF);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                Exp();
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.THEN);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                C1();
+                System.out.println("Token atual:"+actualSymbol.toString());
+                if (actualSymbol.getSymbol() == symbolTable.ELSE) {
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                    casaToken(symbolTable.ELSE);
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                    C1();
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                }
+            } else if (actualSymbol.getSymbol() == symbolTable.READLN) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.READLN);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.APARENTESES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.ID);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.FPARENTESES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.DOTCOMMA);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.WRITE) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.WRITE);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.APARENTESES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                Exp();
+                System.out.println("Token atual:"+actualSymbol.toString());
+                while (actualSymbol.getSymbol() == symbolTable.COMMA) {
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                    casaToken(symbolTable.COMMA);
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                    Exp();
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                }
+                casaToken(symbolTable.FPARENTESES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.DOTCOMMA);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.WRITELN) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.WRITELN);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.APARENTESES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                Exp();
+                System.out.println("Token atual:"+actualSymbol.toString());
+                while (actualSymbol.getSymbol() == symbolTable.COMMA) {
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                    casaToken(symbolTable.COMMA);
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                    Exp();
+                    System.out.println("Token atual:"+actualSymbol.toString());
+                }
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.FPARENTESES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.DOTCOMMA);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.ID) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.ID);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.ATRIB);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                Exp();
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.DOTCOMMA);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.DOTCOMMA) {
+                System.out.println("Token atual 1:"+actualSymbol.toString());
+                casaToken(symbolTable.DOTCOMMA);
+                System.out.println("Token atual 2:"+actualSymbol.toString());
+            }
+        }
+    }
+
+    //proc C1
+    public void C1() throws Exception {
+        System.out.println("Token atual:"+actualSymbol.toString());
+        if (actualSymbol.getSymbol() == symbolTable.BEGIN) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.BEGIN);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            C();
+            System.out.println("Token atual:"+actualSymbol.toString());
+            while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+                    ||actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA
+                    || actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE
+                    || actualSymbol.getSymbol() == symbolTable.WRITELN) {
+                System.out.println("Token atual:"+actualSymbol.toString());
                 C();
+                System.out.println("Token atual:"+actualSymbol.toString());
             }
+            casaToken(symbolTable.END);
+            System.out.println("Token atual:"+actualSymbol.toString());
+        } else {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            C();
+            System.out.println("Token atual:"+actualSymbol.toString());
         }
+    }
 
-        //Proc Exp
-        public void Exp()throws Exception{
+    //Proc Exp
+    public void Exp() throws Exception {
+        System.out.println("Token atual:"+actualSymbol.toString());
+        ExpS();
+        System.out.println("Token atual:"+actualSymbol.toString());
+        if (actualSymbol.getSymbol() == symbolTable.LESS || actualSymbol.getSymbol() == symbolTable.GREAT
+                || actualSymbol.getSymbol() == symbolTable.LESSOREQUAL || actualSymbol.getSymbol() == symbolTable.GREATOREQUAL
+                || actualSymbol.getSymbol() == symbolTable.EQUAL || actualSymbol.getSymbol() == symbolTable.DIFFERENT) {
+            if (actualSymbol.getSymbol() == symbolTable.LESS) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.LESS);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.GREAT) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.GREAT);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.LESSOREQUAL) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.LESSOREQUAL);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.GREATOREQUAL) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.GREATOREQUAL);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.EQUAL) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.EQUAL);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.DIFFERENT) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.DIFFERENT);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            }
             ExpS();
-            if(tok == LESS || tok == GREAT || tok == LESSOREQUAL ||  tok == GREATOREQUAL || tok == EQUAL || tok == DIFFERENT){
-                if (tok == LESS) {
-                    casaTok(LESS);
-                }
-                else if (tok == GREAT) {
-                    casaTok(GREAT);
-                }
-                else if (tok == LESSOREQUAL) {
-                    casaTok(LESSOREQUAL);
-                }
-                else if(tok == GREATOREQUAL){
-                    casaTok(GREATOREQUAL);
-                }
-                else if(tok == EQUAL){
-                    casaTok(EQUAL);
-                }
-                else if (tok == DIFFERENT) {
-                    casaTok(DIFFERENT);
-                }
-                ExpS();
-            }
         }
+    }
 
-        //proc ExpS
-        public void ExpS() throws Exception {
-            if(tok == PLUS){
-                casaTok(PLUS);
-            }
-            else if (tok == MINUS){
-                casaTok(MINUS);
+    //proc ExpS
+    public void ExpS() throws Exception {
+        System.out.println("Token atual:"+actualSymbol.toString());
+        if (actualSymbol.getSymbol() == symbolTable.PLUS) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.PLUS);
+            System.out.println("Token atual:"+actualSymbol.toString());
+        } else if (actualSymbol.getSymbol() == symbolTable.MINUS) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.MINUS);
+            System.out.println("Token atual:"+actualSymbol.toString());
+        }
+        T();
+        while (actualSymbol.getSymbol() == symbolTable.PLUS || actualSymbol.getSymbol() == symbolTable.MINUS
+                || actualSymbol.getSymbol() == symbolTable.OR) {
+            if (actualSymbol.getSymbol() == symbolTable.PLUS) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.PLUS);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.MINUS) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.MINUS);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.OR);
+                System.out.println("Token atual:"+actualSymbol.toString());
             }
             T();
-            while(tok == PLUS || tok == MINUS || tok == OR){
-                if(tok == PLUS){
-                    casaTok(PLUS);
-                }
-                else if(tok == MINUS){
-                    casaTok(MINUS);
-                }
-                else{
-                    casaTok(OR);
-                }
-                T();
-            }
         }
-
-        //Proc T
-        public void T() throws Exception {
-            F();
-            while(tok == STAR || tok == SLASH || tok == PERCENT || tok == AND ){
-                if(tok == STAR){
-                    casaTok(STAR);
-                }
-                else if(tok == SLASH){
-                    casaTok(SLASH);
-                }
-                else if(tok == PERCENT){
-                    casaTok(PERCENT);
-                }
-                else {
-                    casaTok(AND);
-                }
-                F();
-            }
-        }
-
-        //Proc F
-        public void F() throws Exception {
-            if(tok == APARENTESES) {
-                casaTok(APARENTESES);
-                Exp();
-                casaTok(FPARENTESES);
-            }
-            else if(tok == NOT){
-                casaTok(NOT);
-                F();
-            }
-            else if(tok == VALOR){
-                casaTok(VALOR);
-            }
-            else{
-                casaTok(ID);
-                if(tok == ACOLCHETES){
-                  casaTok(ACOLCHETES);
-                  Exp();
-                  casaTok(FCOLCHETES);
-                }
-            }
-        }
-
     }
+
+    //Proc T
+    public void T() throws Exception {
+        System.out.println("Token atual:"+actualSymbol.toString());
+        F();
+        System.out.println("Token atual:"+actualSymbol.toString());
+        while (actualSymbol.getSymbol() == symbolTable.STAR || actualSymbol.getSymbol() == symbolTable.SLASH
+                || actualSymbol.getSymbol() == symbolTable.PERCENT || actualSymbol.getSymbol() == symbolTable.AND) {
+            if (actualSymbol.getSymbol() == symbolTable.STAR) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.STAR);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.SLASH) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.SLASH);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else if (actualSymbol.getSymbol() == symbolTable.PERCENT) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.PERCENT);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            } else {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.AND);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            }
+            F();
+        }
+    }
+
+    //Proc F
+    public void F() throws Exception {
+        System.out.println("Token atual:"+actualSymbol.toString());
+        if (actualSymbol.getSymbol() == symbolTable.APARENTESES) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.APARENTESES);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            Exp();
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.FPARENTESES);
+            System.out.println("Token atual:"+actualSymbol.toString());
+        } else if (actualSymbol.getSymbol() == symbolTable.NOT) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.NOT);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            F();
+            System.out.println("Token atual:"+actualSymbol.toString());
+        } else if (actualSymbol.getSymbol() == symbolTable.VALOR) {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.VALOR);
+            System.out.println("Token atual:"+actualSymbol.toString());
+        } else {
+            System.out.println("Token atual:"+actualSymbol.toString());
+            casaToken(symbolTable.ID);
+            System.out.println("Token atual:"+actualSymbol.toString());
+            if (actualSymbol.getSymbol() == symbolTable.ACOLCHETES) {
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.ACOLCHETES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+                Exp();
+                System.out.println("Token atual:"+actualSymbol.toString());
+                casaToken(symbolTable.FCOLCHETES);
+                System.out.println("Token atual:"+actualSymbol.toString());
+            }
+        }
+    }
+}
 
 
