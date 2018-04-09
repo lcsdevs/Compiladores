@@ -121,8 +121,10 @@ class LexicalAnalysis {
                         }
                         lex += c;
                         actualState = 6;
-                    }else{
-                        actualState = 5;
+                    }else {
+                        tokenType = value;
+                        actualState = finalState;
+                        dev = true;
                     }
                     break;
                 case 5:
