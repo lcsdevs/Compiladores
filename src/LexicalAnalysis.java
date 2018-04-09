@@ -272,7 +272,7 @@ class LexicalAnalysis {
                     lex = lex.toLowerCase();
                     symbolTable.insert(lex, symbolTable.VALOR);
                     symbol = symbolTable.getSimb(lex);
-                    System.out.println("Inseriu o valor"+symbol);
+                   // System.out.println("Inseriu o valor"+symbol);
                 }
             }
         }
