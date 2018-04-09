@@ -25,7 +25,7 @@ public class SyntaticAnalysis {
     public void casaToken(byte tokEsperado) throws IOException {
         try {
            if(actualSymbol != null){
-               System.out.println("Token atual ct:"+actualSymbol.toString());
+              // System.out.println("Token atual ct:"+actualSymbol.toString());
                if(actualSymbol.getSymbol() == tokEsperado){
                    actualSymbol = lexicalAnalysis.tokenization(in);
                }else{
@@ -143,7 +143,7 @@ public class SyntaticAnalysis {
                 C1();
             } else if (actualSymbol.getSymbol() == symbolTable.IF) {
                 casaToken(symbolTable.IF);
-              System.out.println("Token atual exp:"+actualSymbol.toString());
+                System.out.println("Token atual exp:"+actualSymbol.toString());
                 Exp();
                 System.out.println("Token atual aqui12:"+actualSymbol.toString());
                 casaToken(symbolTable.THEN);
@@ -194,14 +194,14 @@ public class SyntaticAnalysis {
     //proc C1
     public void C1() throws Exception {
         if (actualSymbol.getSymbol() == symbolTable.BEGIN) {
-            System.out.println("Token atual:"+actualSymbol.toString());
+           // System.out.println("Token atual:"+actualSymbol.toString());
             casaToken(symbolTable.BEGIN);
             C();
             while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
                     ||actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA
                     || actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE
                     || actualSymbol.getSymbol() == symbolTable.WRITELN) {
-                System.out.println("Token atual:"+actualSymbol.toString());
+               // System.out.println("Token atual:"+actualSymbol.toString());
                 C();
             }
             casaToken(symbolTable.END);
