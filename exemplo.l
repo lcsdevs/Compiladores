@@ -6,7 +6,7 @@ int n[0], max, i;
 
   for i<-0 to 2 do begin
     write("Digite um numero: ");
-    readln(n[i]);
+    readln(max);
   end
   if n[0] > n[1] then begin
      if n[0] > n[2] then max<-n[0]; else max<-n[2];
