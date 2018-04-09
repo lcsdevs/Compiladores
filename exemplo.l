@@ -1,13 +1,14 @@
-/* Exemplo de Programa na linguagem L int */
+/* Exemplo de Programa na linguagem L */
 
-int n;
-char nome[40];
-final MAXITER<-10;
+int n[3], max, i;
 
-/* Programa Principal */ 
+/* Programa Principal */
 
-  write("Digite seu nome: ");
-  readln(nome);
-  for n<-1 to MAXITER do begin
-    writeln("Ola' ",nome);
+  for i<-0 to 2 do begin
+    write("Digite um numero: ");
+    readln(n[i]);
   end
+  if n[0] > n[1] then begin
+    if n[0] > n[2] then max<-n[0]; else max<-n[2];
+  end else if n[1] > n[2] then max<-n[1]; else max<-n[2];
+  writeln("O maior numero e' ",max);

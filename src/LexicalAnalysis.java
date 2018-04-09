@@ -121,6 +121,8 @@ class LexicalAnalysis {
                         }
                         lex += c;
                         actualState = 6;
+                    }else{
+                        actualState = 5;
                     }
                     break;
                 case 5:
