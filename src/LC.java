@@ -1,18 +1,20 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.InputStreamReader;
 
 public class LC {
     static BufferedReader archive;
     static SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis();
     ;
 
-    static void readArchive() {
+    static void readArchive(String archive1) {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String file = "";
 
         try {
             do {
-                System.out.print("Digite o nome do arquivo: ");
-                file = in.readLine();
+                //System.out.print("Digite o nome do arquivo: ");
+                file = archive1;
                 if (file.length() > 0) {
                     if (file.charAt(file.length() - 2) != '.' && file.charAt(file.length() - 1) != 'l') {
                         System.err.println("Arquivo nao compativel");
@@ -24,7 +26,7 @@ public class LC {
             archive = new BufferedReader(new FileReader(file));
         } catch (Exception e) {
             System.err.println("Arquivo nao encontrado");
-            readArchive();
+            readArchive("");
         }
     }
 
@@ -51,10 +53,10 @@ public class LC {
         */
         while (!syntaticAnalysis.lexicalAnalysis.eof) {
             try {
-                readArchive();
+                readArchive(args[0]);
                 syntaticAnalysis.startParsing(archive);
             } catch (Exception e) {
-                System.err.println("Erro " + e.getMessage());
+               // System.err.println("Erro " + e.getMessage());
             }
         }
     }
