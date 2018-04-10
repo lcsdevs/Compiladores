@@ -1,8 +1,8 @@
-/* Exemplo de Programa na linguagem L */
+/* comentario aleatorio */
 
 int n[0], max, i;
 
-/* Programa Principal *
+/* Programa Principal */
 
   for i<-0 to 2 do begin
     write("Digite um numero: ");
@@ -12,4 +12,3 @@ int n[0], max, i;
      if n[0] > n[2] then max<-n[0]; else max<-n[2];
   end else if n[1] > n[2] then max<-n[1]; else max<-n[2];
   writeln("O maior numero e' ",max);
-*/
