@@ -1,3 +1,8 @@
+/*
+Luciano Junior
+Pedro Rangel
+ */
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
