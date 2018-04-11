@@ -158,13 +158,13 @@ class LexicalAnalysis {
                     c = (char) archive.read();
                     if (c == 'h') {
                         lex += c;
+                        tokenType=value;
                         actualState = finalState;
                     } else if (flagHexa == 2) {
                         lex += c;
                         actualState = 5;
                     } else {
                         actualState = finalState;
-                        System.exit(0);
                     }
                     break;
                 case 8:
