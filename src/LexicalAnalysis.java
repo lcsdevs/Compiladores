@@ -74,6 +74,9 @@ class LexicalAnalysis {
                     } else if (c == '/') {
                         lex += c;
                         actualState = 13;
+                    }else if(c == -1){
+                        actualState = finalState;
+                        eof = true;
                     }
                     break;
                 case 1:
