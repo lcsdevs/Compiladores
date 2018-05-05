@@ -79,6 +79,11 @@ class LexicalAnalysis {
                     } else if (c == '/') {
                         lex += c;
                         actualState = 13;
+                    }else if (c == ':'){
+                        actualState = finalState;
+                        lex+= c;
+                        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
+                        System.exit(0);
                     }else if(c == -1){
                         actualState = finalState;
                         eof = true;

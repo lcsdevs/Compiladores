@@ -74,10 +74,11 @@ public class SyntaticAnalysis {
                 D1();
             }
             casaToken(symbolTable.DOTCOMMA);
+
         } else if (actualSymbol.getSymbol() == symbolTable.FINAL) {
             casaToken(symbolTable.FINAL);
             casaToken(symbolTable.ID);
-            casaToken(symbolTable.ATRIB);
+            casaToken(symbolTable.EQUAL);
             if (actualSymbol.getSymbol() == symbolTable.MINUS) {
                 casaToken(symbolTable.MINUS);
             }
@@ -133,6 +134,7 @@ public class SyntaticAnalysis {
                 || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
                 actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
                 actualSymbol.getSymbol() == symbolTable.WRITELN) {
+
             if (actualSymbol.getSymbol() == symbolTable.FOR) {
                 casaToken(symbolTable.FOR);
                 casaToken(symbolTable.ID);
@@ -145,37 +147,25 @@ public class SyntaticAnalysis {
                     casaToken(symbolTable.VALOR);
                 }
                 casaToken(symbolTable.DO);
-                if(actualSymbol.getSymbol() != symbolTable.DOTCOMMA){
-                    C1();
-                }else{
-                    System.err.println(lexicalAnalysis.line + ":Token nao esperado: " + actualSymbol.getLexema());
-                    System.exit(1);
-                }
+                C1();
+
             } else if (actualSymbol.getSymbol() == symbolTable.IF) {
                 casaToken(symbolTable.IF);
                 Exp();
                 casaToken(symbolTable.THEN);
-                if(actualSymbol.getSymbol() != symbolTable.DOTCOMMA){
-                    C1();
-                }else{
-                    System.err.println(lexicalAnalysis.line + ":Token nao esperado: " + actualSymbol.getLexema());
-                    System.exit(1);
-                }
+                C1();
                 if (actualSymbol.getSymbol() == symbolTable.ELSE) {
                     casaToken(symbolTable.ELSE);
-                    if(actualSymbol.getSymbol() != symbolTable.DOTCOMMA){
-                        C1();
-                    }else{
-                        System.err.println(lexicalAnalysis.line + ":Token nao esperado: " + actualSymbol.getLexema());
-                        System.exit(1);
-                    }
+                    C1();
                 }
+
             } else if (actualSymbol.getSymbol() == symbolTable.READLN) {
                 casaToken(symbolTable.READLN);
                 casaToken(symbolTable.APARENTESES);
                 Exp();
                 casaToken(symbolTable.FPARENTESES);
                 casaToken(symbolTable.DOTCOMMA);
+
             } else if (actualSymbol.getSymbol() == symbolTable.WRITE) {
                 casaToken(symbolTable.WRITE);
                 casaToken(symbolTable.APARENTESES);
@@ -184,8 +174,9 @@ public class SyntaticAnalysis {
                     casaToken(symbolTable.COMMA);
                     Exp();
                 }
-               casaToken(symbolTable.FPARENTESES);
+                casaToken(symbolTable.FPARENTESES);
                 casaToken(symbolTable.DOTCOMMA);
+
             } else if (actualSymbol.getSymbol() == symbolTable.WRITELN) {
                 casaToken(symbolTable.WRITELN);
                 casaToken(symbolTable.APARENTESES);
@@ -196,11 +187,13 @@ public class SyntaticAnalysis {
                 }
                 casaToken(symbolTable.FPARENTESES);
                 casaToken(symbolTable.DOTCOMMA);
+
             } else if (actualSymbol.getSymbol() == symbolTable.ID) {
                 casaToken(symbolTable.ID);
                 casaToken(symbolTable.ATRIB);
                 Exp();
                 casaToken(symbolTable.DOTCOMMA);
+
             } else if (actualSymbol.getSymbol() == symbolTable.DOTCOMMA) {
                 casaToken(symbolTable.DOTCOMMA);
             }
@@ -210,20 +203,13 @@ public class SyntaticAnalysis {
     //proc C1
     public void C1() throws Exception {
         if (actualSymbol.getSymbol() == symbolTable.BEGIN) {
-           // System.out.println("Token atual:"+actualSymbol.toString());
             casaToken(symbolTable.BEGIN);
-            if(actualSymbol.getSymbol() != symbolTable.DOTCOMMA){
-                C();
-            }else{
-                System.err.println(lexicalAnalysis.line + ":Token nao esperado: " + actualSymbol.getLexema());
-                System.exit(1);
-            }
+            C();
             while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
                     ||actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA
                     || actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE
                     || actualSymbol.getSymbol() == symbolTable.WRITELN) {
-               // System.out.println("Token atual:"+actualSymbol.toString());
-                C();
+            C();
             }
             casaToken(symbolTable.END);
         } else {
