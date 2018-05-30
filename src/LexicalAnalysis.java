@@ -13,6 +13,8 @@ class LexicalAnalysis {
     private char c;
     public boolean eof = false;
     public static int line = 1;
+    private int tam = 0;
+    private String constType = "";
 
     public LexicalAnalysis() {
     }
@@ -25,7 +27,8 @@ class LexicalAnalysis {
         final int id = 1, value = 2;
         int tokenType = 0, valueType = 0;
         int flagHexa = 0;
-
+        final String integer = "inteiro",caracter = "caractere",hexa = "hexadecimal",string = "string";
+        int valor = 0;
         while (actualState != finalState) {
             switch (actualState) {
                 case 0:
@@ -82,8 +85,7 @@ class LexicalAnalysis {
                     }else if (c == ':'){
                         actualState = finalState;
                         lex+= c;
-                        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
-                        System.exit(0);
+                        errorLexical(lex);
                     }else if(c == -1){
                         actualState = finalState;
                         eof = true;
@@ -101,7 +103,7 @@ class LexicalAnalysis {
                     } else {
                         actualState = finalState;
                         eof = true;
-                        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
+                        errorLexical(lex);
                     }
                     break;
                 case 2:
@@ -212,8 +214,7 @@ class LexicalAnalysis {
                         actualState = finalState;
                     } else {
                         actualState = finalState;
-                        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
-                        System.exit(0);
+                        errorLexical(lex);
                     }
                     break;
                 case 12:
@@ -227,8 +228,7 @@ class LexicalAnalysis {
                         actualState = finalState;
                     } else {
                         actualState = finalState;
-                        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
-                        System.exit(0);
+                        errorLexical(lex);
                     }
                     break;
                 case 13:
@@ -285,9 +285,35 @@ class LexicalAnalysis {
                     symbol = symbolTable.getSimb(lex);
                 } else if (tokenType == value) {
                     lex = lex.toLowerCase();
-                    symbolTable.insert(lex, symbolTable.VALOR);
-                    symbol = symbolTable.getSimb(lex);
-                   // System.out.println("Inseriu o valor"+symbol);
+                    if(isInteger(lex)){
+                       valor = Integer.parseInt(lex);
+                        if(valor > 32767 || valor < -32768){
+                            System.out.println(line+":inteiro maior que o valor válido");
+                            System.exit(0);
+                        }else {
+                            symbolTable.insert(lex, symbolTable.VALOR, "inteiro");
+                            constType = "inteiro";
+                            symbol = symbolTable.getSimb(lex);
+                        }
+                    }else if(Character.getNumericValue(lex.charAt(0)) == 0){
+                        if(isHexa(lex.charAt(1)) && isHexa(lex.charAt(2))){
+                            if(lex.length() > 4){
+                                errorLexical(lex);
+                            }else{
+                                symbolTable.insert(lex, symbolTable.VALOR, "hexadecimal");
+                                constType = "hexadecimal";
+                                symbol = symbolTable.getSimb(lex);
+                            }
+                        }
+                    }else if(lex.charAt(0) == 39){
+                        symbolTable.insert(lex, symbolTable.VALOR, "caractere");
+                        constType = "caractere";
+                        symbol = symbolTable.getSimb(lex);
+                    }else if(lex.charAt(0) == 34){
+                        symbolTable.insert(lex, symbolTable.VALOR, "string");
+                        constType = "string";
+                        symbol = symbolTable.getSimb(lex);
+                    }
                 }
             }
         }
@@ -324,5 +350,29 @@ class LexicalAnalysis {
             isAlpha = true;
         }
         return isAlpha;
+    }
+
+    private boolean isInteger(String lex){
+        boolean resp = false;
+        try{
+            int valor = Integer.parseInt(lex);
+            resp = true;
+        }catch (NumberFormatException e){
+            resp = false;
+        }
+        return resp;
+    }
+
+    public String getConstType() {
+        return constType;
+    }
+
+    public void setConstType(String constType) {
+        this.constType = constType;
+    }
+
+    private void errorLexical(String lex){
+        System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
+        System.exit(0);
     }
 }

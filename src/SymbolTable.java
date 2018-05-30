@@ -11,12 +11,31 @@ class Symbol {
     String lexema;
     byte token;
     int endereco;
+    private String classe="";
+    private String tipo="";
+    int tamanho;
 
     public Symbol(String lexema, byte token, int endereco) {
         this.lexema = lexema;
         this.token = token;
         this.endereco = endereco;
     }
+
+    public Symbol(String lexema,byte token,int endereco,String tipo){
+        this.lexema = lexema;
+        this.token = token;
+        this.endereco = endereco;
+        this.tipo = tipo;
+    }
+
+    public Symbol(String lexema,byte token,int endereco,String tipo,String classe){
+        this.lexema = lexema;
+        this.token = token;
+        this.endereco = endereco;
+        this.tipo = tipo;
+        this.classe = classe;
+    }
+
 
     public byte getSymbol(){
         return this.token;
@@ -28,6 +47,23 @@ class Symbol {
     public String toString() {
         return this.lexema;
     }
+
+    public String getClasse(){
+        return  this.classe;
+    }
+
+    public void setClasse(String classe){
+        this.classe = classe;
+    }
+
+    public String getTipo(){
+        return  this.tipo;
+    }
+
+    public void setTipo(String tipo){
+        this.tipo = tipo;
+    }
+
 
 }
 
@@ -147,6 +183,12 @@ public class SymbolTable {
     public int insert(String lex,byte tipo) {
        // lex = lex.toLowerCase();
         table.put(lex, new Symbol(lex,tipo, ++pos));
+        return search(lex);
+    }
+
+    public int insert(String lex,byte tipo,String tipoSemantico) {
+        // lex = lex.toLowerCase();
+        table.put(lex, new Symbol(lex,tipo, ++pos,tipoSemantico));
         return search(lex);
     }
 

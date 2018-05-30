@@ -11,6 +11,12 @@ public class SyntaticAnalysis {
     SymbolTable symbolTable;
     Symbol actualSymbol;
     BufferedReader in;
+
+    private String VAR = "classe-var",CONST = "classe-const";
+
+    private String TIPO_type="",D1_class="",D_class="";
+
+
    public SyntaticAnalysis(){
         lexicalAnalysis = new LexicalAnalysis();
         symbolTable = new SymbolTable();
@@ -89,16 +95,21 @@ public class SyntaticAnalysis {
 
     //proc TIPO
     public void TIPO() throws Exception {
+       String id_lex = actualSymbol.getClasse();
         if (actualSymbol.getSymbol() == symbolTable.INT) {
             casaToken(symbolTable.INT);
+            TIPO_type = "inteiro";
         } else if (actualSymbol.getSymbol() == symbolTable.CHAR) {
             casaToken(symbolTable.CHAR);
+            TIPO_type = "caractere";
         }
+        // actualSymbol.setClasse(id_lex);
+        actualSymbol.setTipo(TIPO_type);
     }
 
     //proc D1
     public void D1() throws Exception {
-        casaToken(symbolTable.ID);
+       casaToken(symbolTable.ID);
         if (actualSymbol.getSymbol() == symbolTable.ATRIB) {
             casaToken(symbolTable.ATRIB);
             if (actualSymbol.getSymbol() == symbolTable.MINUS) {
@@ -298,6 +309,10 @@ public class SyntaticAnalysis {
                 casaToken(symbolTable.FCOLCHETES);
             }
         }
+    }
+
+    private void errorID(String lex){
+        System.out.println(lexicalAnalysis.line + ":identificador ja declarado" + "["+lex+"]");
     }
 }
 
