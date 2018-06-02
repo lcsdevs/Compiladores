@@ -251,8 +251,7 @@ class LexicalAnalysis {
                         line++;
                     } else if (c == -1 || c == 65535) {
                         eof = true;
-                        System.err.println(line + ":Fim de arquivo nao esperado");
-                        System.exit(0);
+                        errorEndFile();
                     } else {
                         actualState = 14;
                     }
@@ -375,4 +374,29 @@ class LexicalAnalysis {
         System.out.println(line + ":lexema nao identificado" + "[" + lex + "]");
         System.exit(0);
     }
+
+    private void errorEndFile(){
+        System.err.println(line + ":Fim de arquivo nao esperado");
+        System.exit(0);
+    }
+
+    public Symbol search(String lex){
+        Symbol resp = null;
+        if(symbolTable.search(lex) != null){
+            resp = symbolTable.getSimb(lex);
+        }
+        return resp;
+    }
+
+    public Symbol updateVector(String lex,String value){
+        Symbol symbol = null;
+        if(symbolTable.search(lex) != null){
+            symbol = symbolTable.getSimb(lex);
+        }
+        symbolTable.table.put(lex,new Symbol(symbol.getLexema(),symbol.getSymbol(),Integer.parseInt(value),symbol.getTipo(),symbol.getClasse()));
+        symbol = symbolTable.getSimb(lex);
+        return symbol;
+    }
+
+
 }

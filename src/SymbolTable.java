@@ -15,6 +15,7 @@ class Symbol {
     private String tipo="";
     int tamanho;
 
+    public Symbol(){}
     public Symbol(String lexema, byte token, int endereco) {
         this.lexema = lexema;
         this.token = token;
@@ -168,9 +169,10 @@ public class SymbolTable {
         }
     }
 
+
     public Symbol getSimb(String lex) {
         //System.out.println(lex);
-        lex = lex.toLowerCase();
+       // lex = lex.toLowerCase();
         Symbol s = table.get(lex);
         if (s == null) {
             return (getSimb("k"));

@@ -528,6 +528,7 @@ public class SyntaticAnalysis {
 
     //Proc F
     public void F() throws Exception {
+       boolean pos = false;
         if (actualSymbol.getSymbol() == symbolTable.APARENTESES) {
             casaToken(symbolTable.APARENTESES);
             Exp();
@@ -559,6 +560,8 @@ public class SyntaticAnalysis {
                 errorUnT(actualSymbol.getLexema());
             }
             F_type = actualSymbol.getTipo();
+            tempToken = actualSymbol;
+            System.out.println(tempToken);
             casaToken(symbolTable.ID);
 
             if (actualSymbol.getSymbol() == symbolTable.ACOLCHETES) {
