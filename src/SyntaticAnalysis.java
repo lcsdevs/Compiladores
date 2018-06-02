@@ -141,6 +141,7 @@ public class SyntaticAnalysis {
         actualSymbol.setTipo(TIPO_type);
         actualSymbol.setClasse(VAR);
         tempToken = actualSymbol;
+
         casaToken(symbolTable.ID);
         if (actualSymbol.getSymbol() == symbolTable.ATRIB) {
             casaToken(symbolTable.ATRIB);
@@ -229,6 +230,7 @@ public class SyntaticAnalysis {
     //proc C
     public void C() throws Exception {
         String id_temp = "";
+        String value = "";
         while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
                 || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
                 actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
@@ -329,10 +331,39 @@ public class SyntaticAnalysis {
                 }
                 tempToken = actualSymbol;
                 casaToken(symbolTable.ID);
+                if (actualSymbol.getSymbol() == symbolTable.ACOLCHETES) {
+                    casaToken(symbolTable.ACOLCHETES);
+                    Exp();
+                    casaToken(symbolTable.FCOLCHETES);
+                    if(tempToken.getTipo().equals(typeCharacter)){
+                        vectorFlagCharacter = true;
+                    }else if(tempToken.getTipo().equals(typeInteger)){
+                        vectorFlagInteger = true;
+                    }
+                }
                 casaToken(symbolTable.ATRIB);
+                if(actualSymbol.getTipo().equals(typeString)) {
+                    value = actualSymbol.getLexema().substring(1, actualSymbol.getLexema().length() - 1);
+                    value += "$";
+                }
                 Exp();
-
+                if(vectorFlagCharacter && tempToken.getTipo().equals(typeCharacter)){
+                    if(Exp_type.equals(typeString)){
+                        int tam = lexicalAnalysis.search(tempToken.getLexema()).tamanho;
+                        if(value.length() > tam){
+                            errorEV();
+                        }
+                    }
+                }else {
+                    errorIT();
+                }
                 if (!Exp_type.equals(tempToken.getTipo())) {
+                    errorIT();
+                }else if(tempToken.getTipo().equals(typeCharacter) && (!Exp_type.equals(typeCharacter) || !Exp_type.equals(typeInteger))){
+                    errorIT();
+                }else if(tempToken.getTipo().equals(typeInteger) && !Exp_type.equals(typeInteger)){
+                    errorIT();
+                }else if(vectorFlagInteger){
                     errorIT();
                 }
                 casaToken(symbolTable.DOTCOMMA);
@@ -561,7 +592,7 @@ public class SyntaticAnalysis {
             }
             F_type = actualSymbol.getTipo();
             tempToken = actualSymbol;
-            System.out.println(tempToken);
+
             casaToken(symbolTable.ID);
 
             if (actualSymbol.getSymbol() == symbolTable.ACOLCHETES) {

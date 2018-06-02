@@ -29,14 +29,17 @@ class Symbol {
         this.tipo = tipo;
     }
 
-    public Symbol(String lexema,byte token,int endereco,String tipo,String classe){
+    public Symbol(String lexema,byte token,String tipo,String classe,int tamanho){
         this.lexema = lexema;
         this.token = token;
-        this.endereco = endereco;
+        this.tamanho = tamanho;
         this.tipo = tipo;
         this.classe = classe;
     }
 
+    public int getTamanho(){
+        return this.tamanho;
+    }
 
     public byte getSymbol(){
         return this.token;

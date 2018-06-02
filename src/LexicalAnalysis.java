@@ -393,7 +393,7 @@ class LexicalAnalysis {
         if(symbolTable.search(lex) != null){
             symbol = symbolTable.getSimb(lex);
         }
-        symbolTable.table.put(lex,new Symbol(symbol.getLexema(),symbol.getSymbol(),Integer.parseInt(value),symbol.getTipo(),symbol.getClasse()));
+        symbolTable.table.put(lex,new Symbol(symbol.getLexema(),symbol.getSymbol(),symbol.getTipo(),symbol.getClasse(),Integer.parseInt(value)));
         symbol = symbolTable.getSimb(lex);
         return symbol;
     }
