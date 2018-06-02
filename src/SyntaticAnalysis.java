@@ -259,10 +259,11 @@ public class SyntaticAnalysis {
                 }
                 if (actualSymbol.getSymbol() == symbolTable.STEP) {
                     casaToken(symbolTable.STEP);
+                    tempToken = actualSymbol;
+                    casaToken(symbolTable.VALOR);
                     if (!actualSymbol.getTipo().equals(typeInteger)) {
                         errorIT();
                     }
-                    casaToken(symbolTable.VALOR);
                 }
                 casaToken(symbolTable.DO);
                 C1();
