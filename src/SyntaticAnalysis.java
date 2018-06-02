@@ -354,10 +354,7 @@ public class SyntaticAnalysis {
                             errorEV();
                         }
                     }
-                }else {
-                    errorIT();
-                }
-                if (!Exp_type.equals(tempToken.getTipo())) {
+                }else if (!Exp_type.equals(tempToken.getTipo())) {
                     errorIT();
                 }else if(tempToken.getTipo().equals(typeCharacter) && (!Exp_type.equals(typeCharacter) || !Exp_type.equals(typeInteger))){
                     errorIT();
