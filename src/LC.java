@@ -3,7 +3,10 @@ Luciano Junior
 Pedro Rangel
  */
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 
 public class LC {
     static BufferedReader archive;
@@ -11,7 +14,7 @@ public class LC {
 
     public static void main(String[] args) {
         String nomArq;
-
+        WriterASM writerASM;
         if(args.length < 1){
             System.out.println("Numero de argumentos invalido!");
             System.exit(5);
@@ -33,6 +36,7 @@ public class LC {
         while (!syntaticAnalysis.lexicalAnalysis.eof) {
             try {
                // readArchive(args[0]);
+                writerASM = new WriterASM();
                 syntaticAnalysis.startParsing(archive);
             } catch (Exception e) {
                // System.err.println("Erro " + e.getMessage());

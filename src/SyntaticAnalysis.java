@@ -12,6 +12,8 @@ public class SyntaticAnalysis {
     SymbolTable symbolTable;
     Symbol actualSymbol;
     BufferedReader in;
+    WriterASM writerASM;
+
     /*-Principal Fim-*/
 
     /*-Semântico Inicio-*/
@@ -31,7 +33,12 @@ public class SyntaticAnalysis {
 
     /*-Semântico Fim-*/
 
-    public SyntaticAnalysis() {
+    /*MASM - FIM*/
+    Memory memory;
+    Label label;
+    int address = memory.count;
+    /*MASM - FIM*/
+    public SyntaticAnalysis(){
         lexicalAnalysis = new LexicalAnalysis();
         symbolTable = new SymbolTable();
     }
@@ -70,6 +77,7 @@ public class SyntaticAnalysis {
 
     //proc S
     public void S() throws Exception {
+        address = memory.toAllocateTemp();
         while (actualSymbol.getSymbol() == symbolTable.INT || actualSymbol.getSymbol() == symbolTable.CHAR
                 || actualSymbol.getSymbol() == symbolTable.FINAL) {
             D();
@@ -261,7 +269,8 @@ public class SyntaticAnalysis {
                     casaToken(symbolTable.STEP);
                     tempToken = actualSymbol;
                     casaToken(symbolTable.VALOR);
-                    if (!actualSymbol.getTipo().equals(typeInteger)) {
+                    /*Aqui*/
+                    if (!tempToken.getTipo().equals(typeInteger)) {
                         errorIT();
                     }
                 }
@@ -285,7 +294,7 @@ public class SyntaticAnalysis {
                 casaToken(symbolTable.READLN);
                 casaToken(symbolTable.APARENTESES);
                 Exp();
-                if (vectorFlagInteger || Exp_type.equals(typeHexa)) {
+                if (Exp_type.equals(typeHexa)) {
                     errorIT();
                 }
                 casaToken(symbolTable.FPARENTESES);
@@ -370,6 +379,7 @@ public class SyntaticAnalysis {
                 casaToken(symbolTable.DOTCOMMA);
             }
         }
+
     }
 
     //proc C1
