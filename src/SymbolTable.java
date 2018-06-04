@@ -10,6 +10,15 @@ import java.util.Map;
 class Symbol {
     String lexema;
     byte token;
+
+    public int getEndereco() {
+        return endereco;
+    }
+
+    public void setEndereco(int endereco) {
+        this.endereco = endereco;
+    }
+
     int endereco;
     private String classe="";
     private String tipo="";

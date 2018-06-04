@@ -23,15 +23,27 @@ public class Memory {
         return tmp;
     }
 
+    public int toAllocateCharacter(){
+        int tmp = count;
+        count++;
+        return tmp;
+    }
+
     public int toAllocateInteger(){
         int tmp = count;
         count+=2;
         return tmp;
     }
 
-    public int toAllocateVector(){
+    public int toAllocateVectorInt(int value){
         int tmp = count;
-        count+=4000;
+        count+= 2 * value;
+        return tmp;
+    }
+
+    public int toAllocateVectorChar(int value){
+        int tmp = count;
+        count+=value;
         return tmp;
     }
 
@@ -52,6 +64,12 @@ public class Memory {
     }
 
     public int toAllocateTempLogic(){
+        int tmp = countTemp;
+        countTemp++;
+        return tmp;
+    }
+
+    public int toAllocateTempCharacter(){
         int tmp = countTemp;
         countTemp++;
         return tmp;
