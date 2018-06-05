@@ -17,16 +17,15 @@ public class SyntaticAnalysis {
     /*-Semântico Inicio-*/
     private final String VAR = "classe-var", CONST = "classe-const";
     private final String typeInteger = "inteiro", typeCharacter = "caractere", typeLogic = "logico", typeHexa = "hexadecimal",
-            typeString = "string";
+            typeString = "string", typeVectorInt = "vetor_inteiro", typeVectorChar = "vetor_caractere";
 
-    private String TIPO_type = "", D1_class = "", D_class = "", F_type = "", F1_type = "", Exp_type = "",
+    private String TIPO_type = "", D1_class = "", D_class = "", D_type = "", F_type = "", F1_type = "", Exp_type = "",
             T_type = "", T1_type = "", ExpS_type = "", ExpS1_type = "";
 
     private Symbol tempToken = new Symbol();
     private Symbol tokenConst = new Symbol();
 
     private boolean minusFlag = false;
-    private boolean vectorFlagInteger = false, vectorFlagCharacter = false;
     private int Exp_op = 0, ExpS_op = 0, T_op = 0;
 
     /*-Semântico Fim-*/
@@ -37,7 +36,7 @@ public class SyntaticAnalysis {
     Label label;
     WriterASM writerASM;
     int address = memory.count;
-    private static int F_end = 0, F1_end = 0, T_end = 0, T1_end = 0,ExpS_end = 0,ExpS1_end = 0,Exp_end = 0,
+    private static int F_end = 0, F1_end = 0, T_end = 0, T1_end = 0, ExpS_end = 0, ExpS1_end = 0, Exp_end = 0,
             D_end = 0;
     /*MASM - Fim*/
 
@@ -87,17 +86,17 @@ public class SyntaticAnalysis {
 
     //proc S
     public void S() throws Exception {
-        writerASM.writer.add("sseg SEGMENT STACK ;inicio seg. pilha");
-        writerASM.writer.add("byte 4000h DUP(?) ;dimensiona pilha");
-        writerASM.writer.add("sseg ENDS ;fim seg. pilha");
-        writerASM.writer.add("dseg SEGMENT PUBLIC ;inicio seg. dados");
+        writerASM.writer.add("sseg SEGMENT STACK ;inicio segmento da  pilha");
+        writerASM.writer.add("byte 4000h DUP(?) ;dimensiona a  pilha");
+        writerASM.writer.add("sseg ENDS ;fim segmento da pilha");
+        writerASM.writer.add("dseg SEGMENT PUBLIC ;inicio segmento de dados");
         writerASM.writer.add("byte 4000h DUP(?) ;temporarios");
         address = memory.toAllocateTemp();
         while (actualSymbol.getSymbol() == symbolTable.INT || actualSymbol.getSymbol() == symbolTable.CHAR
                 || actualSymbol.getSymbol() == symbolTable.FINAL) {
             D();
         }
-        writerASM.writer.add("dseg ENDS ;fim seg. dados");
+        writerASM.writer.add("dseg ENDS ;fim segmento de dados");
         writerASM.writer.add("cseg SEGMENT PUBLIC ;inicio seg. codigo");
         writerASM.writer.add("ASSUME CS:cseg, DS:dseg");
         writerASM.writer.add("strt:");
@@ -109,6 +108,8 @@ public class SyntaticAnalysis {
                 ) {
             C();
         }
+        writerASM.writer.add("cseg ENDS ;fim seg. codigo");
+        writerASM.writer.add("END strt  ;fim programa ");
 
     }
 
@@ -139,7 +140,7 @@ public class SyntaticAnalysis {
                 casaToken(symbolTable.MINUS);
             }
 
-            if (minusFlag == true && !tempToken.getTipo().equals(typeInteger)) {
+            if (minusFlag == true && !actualSymbol.getTipo().equals(typeInteger)) {
                 errorIT();
             }
             actualSymbol.setClasse(CONST);
@@ -147,27 +148,27 @@ public class SyntaticAnalysis {
             String lexTemp = actualSymbol.getLexema();
             D_class = actualSymbol.getClasse();
             tokenConst.setTipo(actualSymbol.getTipo());
-            if(minusFlag){
+            if (minusFlag) {
                 address = memory.toAllocateInteger();
-                writerASM.writer.add("sword -"+lexTemp);
+                writerASM.writer.add("sword -" + lexTemp + ";valor negativo" + temp.getLexema());
                 temp.setTipo(typeInteger);
-            }else{
-                switch (actualSymbol.getTipo()){
+            } else {
+                switch (actualSymbol.getTipo()) {
                     case typeInteger:
                         address = memory.toAllocateInteger();
-                        writerASM.writer.add("sword "+lexTemp);
+                        writerASM.writer.add("sword " + lexTemp + ";inteiro " + temp.getLexema());
                         break;
                     case typeCharacter:
                         address = memory.toAllocateCharacter();
-                        writerASM.writer.add("byte "+lexTemp);
+                        writerASM.writer.add("byte " + lexTemp + " ;caractere " + temp.getLexema());
                         break;
                     case typeString:
                         address = memory.toAllocateString(lexTemp.length() - 1);
-                        writerASM.writer.add("byte "+actualSymbol.getLexema().substring(0,actualSymbol.getLexema().length() - 1)+"$"+actualSymbol.getLexema().charAt(actualSymbol.getLexema().length() - 1));
+                        writerASM.writer.add("byte " + actualSymbol.getLexema().substring(0, actualSymbol.getLexema().length() - 1) + "$" + actualSymbol.getLexema().charAt(actualSymbol.getLexema().length() - 1));
                         break;
                     case typeHexa:
                         address = memory.toAllocateInteger();
-                        writerASM.writer.add("sword "+lexTemp);
+                        writerASM.writer.add("sword " + lexTemp);
                         break;
                 }
             }
@@ -201,6 +202,9 @@ public class SyntaticAnalysis {
         temp = actualSymbol;
         casaToken(symbolTable.ID);
         if (actualSymbol.getSymbol() == symbolTable.ATRIB) {
+            if (temp.getClasse().equals(CONST)) {
+                errorIC(actualSymbol.getLexema());
+            }
             casaToken(symbolTable.ATRIB);
             if (actualSymbol.getSymbol() == symbolTable.MINUS) {
                 minusFlag = true;
@@ -212,19 +216,19 @@ public class SyntaticAnalysis {
                 errorIT();
             } else {
                 String lexTemp = actualSymbol.getLexema();
-                if(minusFlag){
+                if (minusFlag) {
                     address = memory.toAllocateInteger();
-                    writerASM.writer.add("sword -"+lexTemp);
+                    writerASM.writer.add("sword -" + lexTemp + ";valor negativo" + temp.getLexema());
                     temp.setTipo(typeInteger);
-                }else{
-                    switch (actualSymbol.getTipo()){
+                } else {
+                    switch (actualSymbol.getTipo()) {
                         case typeInteger:
                             address = memory.toAllocateInteger();
-                            writerASM.writer.add("sword "+lexTemp);
+                            writerASM.writer.add("sword " + lexTemp + "; inteiro " + temp.getLexema());
                             break;
                         case typeCharacter:
                             address = memory.toAllocateCharacter();
-                            writerASM.writer.add("byte "+lexTemp);
+                            writerASM.writer.add("byte " + lexTemp + "; caractere " + temp.getLexema());
                             break;
                     }
                 }
@@ -238,9 +242,9 @@ public class SyntaticAnalysis {
             }
 
             if (TIPO_type.equals(typeInteger)) {
-                vectorFlagInteger = true;
+                temp.setTipo(typeVectorInt);
             } else if (TIPO_type.equals(typeCharacter)) {
-                vectorFlagCharacter = true;
+                temp.setTipo(typeVectorChar);
             }
             temp_value = Integer.parseInt(actualSymbol.getLexema());
             if (temp_value < 1) {
@@ -248,24 +252,25 @@ public class SyntaticAnalysis {
             } else if (temp_value > 32767) {
                 errorEV();
             }
-            lexicalAnalysis.updateVector(tempToken.getLexema(),actualSymbol.getLexema());
+            lexicalAnalysis.updateVector(tempToken.getLexema(), actualSymbol.getLexema());
             String lexTemp = actualSymbol.getLexema();
-            switch (actualSymbol.getTipo()){
+            switch (actualSymbol.getTipo()) {
                 case typeInteger:
                     address = memory.toAllocateVectorInt(Integer.parseInt(lexTemp));
                     int x = Integer.parseInt(lexTemp);
                     x = x * 2;
-                    writerASM.writer.add("byte "+x+" DUP(?)");
+                    writerASM.writer.add("byte " + x + " DUP(?)" + "; vectorInt " + temp.getLexema());
                     break;
                 case typeCharacter:
                     address = memory.toAllocateVectorChar(Integer.parseInt(actualSymbol.getLexema()));
-                    writerASM.writer.add("byte "+lexTemp+" DUP(?)");
+                    writerASM.writer.add("byte " + lexTemp + " DUP(?)" + "; vectorChar " + temp.getLexema());
                     break;
             }
+            temp.setEndereco(address);
             casaToken(symbolTable.VALOR);
             casaToken(symbolTable.FCOLCHETES);
-        }else{
-            switch (temp.getTipo()){
+        } else {
+            switch (temp.getTipo()) {
                 case typeInteger:
                     address = memory.toAllocateInteger();
                     writerASM.writer.add("sword ?; inteiro = " + temp.getLexema());
@@ -280,6 +285,7 @@ public class SyntaticAnalysis {
 
         while (actualSymbol.getSymbol() == symbolTable.COMMA) {
             casaToken(symbolTable.COMMA);
+            temp = actualSymbol;
             if (!actualSymbol.getClasse().equals("")) {
                 errorID(actualSymbol.getLexema());
             }
@@ -301,19 +307,19 @@ public class SyntaticAnalysis {
                     errorIT();
                 } else {
                     String lexTemp = actualSymbol.getLexema();
-                    if(minusFlag){
+                    if (minusFlag) {
                         address = memory.toAllocateInteger();
-                        writerASM.writer.add("sword -"+lexTemp);
+                        writerASM.writer.add("sword -" + lexTemp + "; valor negativo " + temp.getLexema());
                         temp.setTipo(typeInteger);
-                    }else{
-                        switch (actualSymbol.getTipo()){
+                    } else {
+                        switch (actualSymbol.getTipo()) {
                             case typeInteger:
                                 address = memory.toAllocateInteger();
-                                writerASM.writer.add("sword "+lexTemp);
+                                writerASM.writer.add("sword " + lexTemp + "; inteiro " + temp.getLexema());
                                 break;
                             case typeCharacter:
                                 address = memory.toAllocateCharacter();
-                                writerASM.writer.add("byte "+lexTemp);
+                                writerASM.writer.add("byte " + lexTemp + "; caractere " + temp.getLexema());
                                 break;
                         }
                     }
@@ -327,9 +333,9 @@ public class SyntaticAnalysis {
                 }
 
                 if (TIPO_type.equals(typeInteger)) {
-                    vectorFlagInteger = true;
+                    temp.setTipo(typeVectorInt);
                 } else if (TIPO_type.equals(typeCharacter)) {
-                    vectorFlagCharacter = true;
+                    temp.setTipo(typeVectorChar);
                 }
                 temp_value = Integer.parseInt(actualSymbol.getLexema());
                 if (temp_value < 1) {
@@ -337,31 +343,32 @@ public class SyntaticAnalysis {
                 } else if (temp_value > 32767) {
                     errorEV();
                 }
-                lexicalAnalysis.updateVector(tempToken.getLexema(),actualSymbol.getLexema());
+                lexicalAnalysis.updateVector(tempToken.getLexema(), actualSymbol.getLexema());
                 String lexTemp = actualSymbol.getLexema();
-                switch (actualSymbol.getTipo()){
+                switch (actualSymbol.getTipo()) {
                     case typeInteger:
                         address = memory.toAllocateVectorInt(Integer.parseInt(lexTemp));
                         int x = Integer.parseInt(lexTemp);
                         x = x * 2;
-                        writerASM.writer.add("byte "+x+" DUP(?)");
+                        writerASM.writer.add("byte " + x + " DUP(?)" + "; vectorInt " + temp.getLexema());
                         break;
                     case typeCharacter:
                         address = memory.toAllocateVectorChar(Integer.parseInt(actualSymbol.getLexema()));
-                        writerASM.writer.add("byte "+lexTemp+" DUP(?)");
+                        writerASM.writer.add("byte " + lexTemp + " DUP(?)" + "; vectorChar " + temp.getLexema());
                         break;
                 }
+                temp.setEndereco(address);
                 casaToken(symbolTable.VALOR);
                 casaToken(symbolTable.FCOLCHETES);
-            }else{
-                switch (temp.getTipo()){
+            } else {
+                switch (temp.getTipo()) {
                     case typeInteger:
                         address = memory.toAllocateInteger();
-                        writerASM.writer.add("sword ?; inteiro = " + temp.getLexema());
+                        writerASM.writer.add("sword ?; inteiro " + temp.getLexema());
                         break;
                     case typeCharacter:
                         address = memory.toAllocateCharacter();
-                        writerASM.writer.add("byte ?; char = " + temp.getLexema());
+                        writerASM.writer.add("byte ?; caractere " + temp.getLexema());
                         break;
                 }
                 temp.setEndereco(address);
@@ -390,27 +397,27 @@ public class SyntaticAnalysis {
                 id_temp = actualSymbol.getTipo();
                 String beginLabel = label.newLabel();
                 String endLabel = label.newLabel();
-              //  writerASM.writer.add(beginLabel+":");
+                //  writerASM.writer.add(beginLabel+":");
 
                 casaToken(symbolTable.ID);
                 casaToken(symbolTable.ATRIB);
                 Exp();
-             //   writerASM.writer.add("mov ax, DS:["+actualSymbol.getEndereco()+"]");
+                //   writerASM.writer.add("mov ax, DS:["+actualSymbol.getEndereco()+"]");
                 if (!Exp_type.equals(typeInteger)) {
                     errorIT();
                 }
                 casaToken(symbolTable.TO);
 
                 Exp();
-           //     writerASM.writer.add("mov bx, DS:["+Exp_end+"]");
+                //     writerASM.writer.add("mov bx, DS:["+Exp_end+"]");
                 if (!Exp_type.equals(typeInteger)) {
                     errorIT();
                 }
                 if (actualSymbol.getSymbol() == symbolTable.STEP) {
                     casaToken(symbolTable.STEP);
                     tempToken = actualSymbol;
-          //          writerASM.writer.add("sub cx, 1");
-          //          writerASM.writer.add("jmp "+beginLabel);
+                    //          writerASM.writer.add("sub cx, 1");
+                    //          writerASM.writer.add("jmp "+beginLabel);
                     casaToken(symbolTable.VALOR);
                     if (!tempToken.getTipo().equals(typeInteger)) {
                         errorIT();
@@ -418,11 +425,11 @@ public class SyntaticAnalysis {
                 }
                 casaToken(symbolTable.DO);
                 C1();
-         //       writerASM.writer.add("cmp ax, bx");
-         //       writerASM.writer.add("jg "+endLabel);
-         //       writerASM.writer.add("add ax, 1");
-         //       writerASM.writer.add("jmp "+beginLabel);
-         //       writerASM.writer.add(endLabel+":");
+                //       writerASM.writer.add("cmp ax, bx");
+                //       writerASM.writer.add("jg "+endLabel);
+                //       writerASM.writer.add("add ax, 1");
+                //       writerASM.writer.add("jmp "+beginLabel);
+                //       writerASM.writer.add(endLabel+":");
 
             } else if (actualSymbol.getSymbol() == symbolTable.IF) {
                 casaToken(symbolTable.IF);
@@ -432,17 +439,17 @@ public class SyntaticAnalysis {
                 if (!Exp_type.equals(typeLogic)) {
                     errorIT();
                 }
-                writerASM.writer.add("mov ax, DS:["+Exp_end+"]");
+                writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
                 writerASM.writer.add("cmp ax, 0");
-                writerASM.writer.add("je "+falseLabel);
+                writerASM.writer.add("je " + falseLabel);
                 casaToken(symbolTable.THEN);
                 C1();
                 if (actualSymbol.getSymbol() == symbolTable.ELSE) {
                     casaToken(symbolTable.ELSE);
-                    writerASM.writer.add("jmp "+endLabel);
-                    writerASM.writer.add(falseLabel+":");
+                    writerASM.writer.add("jmp " + endLabel);
+                    writerASM.writer.add(falseLabel + ":");
                     C1();
-                    writerASM.writer.add(endLabel+":");
+                    writerASM.writer.add(endLabel + ":");
                 }
 
             } else if (actualSymbol.getSymbol() == symbolTable.READLN) {
@@ -454,10 +461,10 @@ public class SyntaticAnalysis {
                 }
                 tmp = actualSymbol;
                 int readerAdd = memory.toAllocateTempString();
-                memory.countTemp+=3;
-                writerASM.writer.add("mov dx, "+readerAdd);
+                memory.countTemp += 3;
+                writerASM.writer.add("mov dx, " + readerAdd);
                 writerASM.writer.add("mov al, 0FFh");
-                writerASM.writer.add("mov ds:["+readerAdd+"], al");
+                writerASM.writer.add("mov ds:[" + readerAdd + "], al");
                 writerASM.writer.add("mov ah, 0Ah");
                 writerASM.writer.add("int 21h");
                 writerASM.writer.add("mov ah, 02h");
@@ -465,9 +472,9 @@ public class SyntaticAnalysis {
                 writerASM.writer.add("int 21h");
                 writerASM.writer.add("mov DL, 0Ah");
                 writerASM.writer.add("int 21h");
-                writerASM.writer.add("mov di, "+ readerAdd+2);
+                writerASM.writer.add("mov di, " + readerAdd + 2);
 
-                if(!tmp.getTipo().equals(typeString)){
+                if (!tmp.getTipo().equals(typeString)) {
                     writerASM.writer.add("mov ax, 0");
                     writerASM.writer.add("mov cx, 10");
                     writerASM.writer.add("mov dx, 1");
@@ -498,7 +505,7 @@ public class SyntaticAnalysis {
                     writerASM.writer.add("pop cx");
                     writerASM.writer.add("imul cx");
                     writerASM.writer.add("mov DS:[" + tmp.getEndereco() + "], ax");
-                }else{
+                } else {
                     writerASM.writer.add("mov si, " + tmp.getEndereco());
                     String labString = label.newLabel();
                     writerASM.writer.add(labString + ":");
@@ -526,11 +533,11 @@ public class SyntaticAnalysis {
                     errorIT();
                 }
 
-                if(Exp_type.equals(typeString)){
-                    writerASM.writer.add("mov dx, "+Exp_end);
+                if (Exp_type.equals(typeString)) {
+                    writerASM.writer.add("mov dx, " + Exp_end);
                     writerASM.writer.add("mov ah, 09h");
                     writerASM.writer.add("int 21h");
-                }else{
+                } else {
                     writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
                     writerASM.writer.add("mov di, " + StringAdd);
                     writerASM.writer.add("mov cx, 0 ;contador");
@@ -575,11 +582,11 @@ public class SyntaticAnalysis {
                         errorIT();
                     }
 
-                    if(Exp_type.equals(typeString)){
-                        writerASM.writer.add("mov dx, "+Exp_end);
+                    if (Exp_type.equals(typeString)) {
+                        writerASM.writer.add("mov dx, " + Exp_end);
                         writerASM.writer.add("mov ah, 09h");
                         writerASM.writer.add("int 21h");
-                    }else{
+                    } else {
                         writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
                         writerASM.writer.add("mov di, " + StringAdd);
                         writerASM.writer.add("mov cx, 0 ;contador");
@@ -627,11 +634,11 @@ public class SyntaticAnalysis {
                 if (!Exp_type.equals(typeCharacter) && !Exp_type.equals(typeInteger) && !Exp_type.equals(typeString)) {
                     errorIT();
                 }
-                if(Exp_type.equals(typeString)){
-                    writerASM.writer.add("mov dx, "+Exp_end);
+                if (Exp_type.equals(typeString)) {
+                    writerASM.writer.add("mov dx, " + Exp_end);
                     writerASM.writer.add("mov ah, 09h");
                     writerASM.writer.add("int 21h");
-                }else{
+                } else {
                     writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
                     writerASM.writer.add("mov di, " + StringAdd);
                     writerASM.writer.add("mov cx, 0 ;contador");
@@ -678,11 +685,11 @@ public class SyntaticAnalysis {
                     if (!Exp_type.equals(typeCharacter) && !Exp_type.equals(typeInteger) && !Exp_type.equals(typeString)) {
                         errorIT();
                     }
-                    if(Exp_type.equals(typeString)){
-                        writerASM.writer.add("mov dx, "+Exp_end);
+                    if (Exp_type.equals(typeString)) {
+                        writerASM.writer.add("mov dx, " + Exp_end);
                         writerASM.writer.add("mov ah, 09h");
                         writerASM.writer.add("int 21h");
-                    }else{
+                    } else {
                         writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
                         writerASM.writer.add("mov di, " + StringAdd);
                         writerASM.writer.add("mov cx, 0 ;contador");
@@ -730,6 +737,8 @@ public class SyntaticAnalysis {
             } else if (actualSymbol.getSymbol() == symbolTable.ID) {
                 if (actualSymbol.getClasse().equals("")) {
                     errorUnT(actualSymbol.getLexema());
+                } else if (actualSymbol.getClasse().equals(CONST)) {
+                    errorIC(actualSymbol.getLexema());
                 }
                 tempToken = actualSymbol;
                 tmp = actualSymbol;
@@ -738,39 +747,40 @@ public class SyntaticAnalysis {
                     casaToken(symbolTable.ACOLCHETES);
                     Exp();
                     casaToken(symbolTable.FCOLCHETES);
-                    if(tempToken.getTipo().equals(typeCharacter)){
-                        vectorFlagCharacter = true;
-                    }else if(tempToken.getTipo().equals(typeInteger)){
-                        vectorFlagInteger = true;
+                    if (tempToken.getTipo().equals(typeCharacter)) {
+                        tempToken.setTipo(typeVectorChar);
+                    } else if (tempToken.getTipo().equals(typeInteger)) {
+                        tempToken.setTipo(typeVectorInt);
                     }
                 }
                 casaToken(symbolTable.ATRIB);
-                if(actualSymbol.getTipo().equals(typeString)) {
+                if (actualSymbol.getTipo().equals(typeString)) {
                     value = actualSymbol.getLexema().substring(1, actualSymbol.getLexema().length() - 1);
                     value += "$";
                 }
                 Exp();
-                if(vectorFlagCharacter && tempToken.getTipo().equals(typeCharacter)){
-                    if(Exp_type.equals(typeString)){
+                Exp_type = ExpS_type;
+                if (Exp_type.equals(typeVectorChar) && tempToken.getTipo().equals(typeCharacter)) {
+                    if (Exp_type.equals(typeString)) {
                         int tam = lexicalAnalysis.search(tempToken.getLexema()).tamanho;
-                        if(value.length() > tam){
+                        if (value.length() > tam) {
                             errorEV();
                         }
                     }
-                }else if (!Exp_type.equals(tempToken.getTipo())) {
+                } else if (!Exp_type.equals(tempToken.getTipo())) {
                     errorIT();
-                }else if(tempToken.getTipo().equals(typeCharacter) && (!Exp_type.equals(typeCharacter) || !Exp_type.equals(typeInteger))){
+                } else if (tempToken.getTipo().equals(typeCharacter) && (!Exp_type.equals(typeCharacter) || !Exp_type.equals(typeInteger))) {
                     errorIT();
-                }else if(tempToken.getTipo().equals(typeInteger) && !Exp_type.equals(typeInteger)){
+                } else if (tempToken.getTipo().equals(typeInteger) && !Exp_type.equals(typeInteger)) {
                     errorIT();
-                }else if(vectorFlagInteger){
+                } else if (tempToken.getTipo().equals(typeVectorInt)) {
                     //errorIT();
                 }
-                writerASM.writer.add("mov al, DS:["+Exp_end+"]");
-                if(Exp_type.equals(typeCharacter)){
+                writerASM.writer.add("mov al, DS:[" + Exp_end + "]");
+                if (Exp_type.equals(typeCharacter)) {
                     writerASM.writer.add("mov ah, 0");
                 }
-                writerASM.writer.add("mov DS:["+tmp.getEndereco()+"], ax");
+                writerASM.writer.add("mov DS:[" + tmp.getEndereco() + "], ax");
                 casaToken(symbolTable.DOTCOMMA);
 
             } else if (actualSymbol.getSymbol() == symbolTable.DOTCOMMA) {
@@ -790,8 +800,8 @@ public class SyntaticAnalysis {
     public void C1() throws Exception {
         if (actualSymbol.getSymbol() == symbolTable.BEGIN) {
             casaToken(symbolTable.BEGIN);
-            C();
-            while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+            //   C();
+            if (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
                     || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA
                     || actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE
                     || actualSymbol.getSymbol() == symbolTable.WRITELN) {
@@ -833,8 +843,8 @@ public class SyntaticAnalysis {
 
             ExpS();
             ExpS1_type = ExpS_type;
-            writerASM.writer.add("mov ax, DS:["+Exp_end+"]");
-            writerASM.writer.add("mov bx, DS:["+ExpS_end+"]");
+            writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
+            writerASM.writer.add("mov bx, DS:[" + ExpS_end + "]");
             writerASM.writer.add("cmp ax, bx");
             String trueLabel = label.newLabel();
 
@@ -844,54 +854,54 @@ public class SyntaticAnalysis {
                         errorIT();
                     }
                     Exp_type = typeLogic;
-                    writerASM.writer.add("jl "+trueLabel);
+                    writerASM.writer.add("jl " + trueLabel);
                     break;
                 case 2:
                     if (!Exp_type.equals(typeInteger) || !ExpS1_type.equals(typeInteger)) {
                         errorIT();
                     }
                     Exp_type = typeLogic;
-                    writerASM.writer.add("jg "+trueLabel);
+                    writerASM.writer.add("jg " + trueLabel);
                     break;
                 case 3:
                     if (!Exp_type.equals(typeInteger) || !ExpS1_type.equals(typeInteger)) {
                         errorIT();
                     }
                     Exp_type = typeLogic;
-                    writerASM.writer.add("jle "+trueLabel);
+                    writerASM.writer.add("jle " + trueLabel);
                     break;
                 case 4:
                     if (Exp_type.equals(typeInteger) && !ExpS1_type.equals(typeInteger)) {
                         errorIT();
                     } else if (Exp_type.equals(typeString) && !ExpS1_type.equals(typeString)) {
                         errorIT();
-                    } else if (!vectorFlagInteger || !vectorFlagCharacter) {
+                    } else if (!Exp_type.equals(typeVectorChar) || !Exp_type.equals(typeVectorInt)) {
                         errorIT();
                     }
                     Exp_type = typeLogic;
-                    writerASM.writer.add("je "+trueLabel);
+                    writerASM.writer.add("je " + trueLabel);
                     break;
                 case 5:
-                    if(Exp_type.equals(typeInteger) && ExpS1_type.equals(typeInteger)){
+                    if (Exp_type.equals(typeInteger) && ExpS1_type.equals(typeInteger)) {
                         errorIT();
                     }
-                    writerASM.writer.add("jge "+trueLabel);
+                    writerASM.writer.add("jge " + trueLabel);
                     break;
                 case 6:
-                    if(Exp_type.equals(typeInteger) && !ExpS1_type.equals(typeInteger)){
+                    if (Exp_type.equals(typeInteger) && !ExpS1_type.equals(typeInteger)) {
                         errorIT();
                     }
-                    writerASM.writer.add("jne "+trueLabel);
+                    writerASM.writer.add("jne " + trueLabel);
                     break;
             }
             writerASM.writer.add("mov AL, 0");
             String falseLabel = label.newLabel();
-            writerASM.writer.add("jmp "+falseLabel);
-            writerASM.writer.add(trueLabel+":");
+            writerASM.writer.add("jmp " + falseLabel);
+            writerASM.writer.add(trueLabel + ":");
             writerASM.writer.add("mov AL,0FFh");
-            writerASM.writer.add(falseLabel+":");
+            writerASM.writer.add(falseLabel + ":");
             Exp_end = memory.newTemp();
-            writerASM.writer.add("mov DS:["+Exp_end+"], AL");
+            writerASM.writer.add("mov DS:[" + Exp_end + "], AL");
         }
     }
 
@@ -907,11 +917,11 @@ public class SyntaticAnalysis {
         }
         T();
         ExpS_type = T_type;
-        if(minusFlag_ExpS){
+        if (minusFlag_ExpS) {
             ExpS_end = memory.newTemp();
-            writerASM.writer.add("mov al, DS:["+T_end+"]");
+            writerASM.writer.add("mov al, DS:[" + T_end + "]");
             writerASM.writer.add("not al");
-            writerASM.writer.add("mov DS:["+T_end+"], al");
+            writerASM.writer.add("mov DS:[" + T_end + "], al");
         }
         ExpS_end = T_end;
 
@@ -931,8 +941,8 @@ public class SyntaticAnalysis {
             int T_endTemp = T_end;
             T();
             T1_type = T_type;
-            writerASM.writer.add("mov ax, DS:["+ExpS_end+"]");
-            writerASM.writer.add("mov bx, DS:["+T_end+"]");
+            writerASM.writer.add("mov ax, DS:[" + ExpS_end + "]");
+            writerASM.writer.add("mov bx, DS:[" + T_end + "]");
             switch (ExpS_op) {
                 case 1:
                     if (!ExpS_type.equals(typeInteger) || !T1_type.equals(typeInteger)) {
@@ -956,7 +966,7 @@ public class SyntaticAnalysis {
                     break;
             }
             ExpS_end = memory.newTemp();
-            writerASM.writer.add("mov DS:["+ExpS_end+"], ax");
+            writerASM.writer.add("mov DS:[" + ExpS_end + "], ax");
         }
     }
 
@@ -983,10 +993,10 @@ public class SyntaticAnalysis {
 
             F();
             F1_type = F_type;
-            writerASM.writer.add("mov al, DS:["+T_end+"]");
-            writerASM.writer.add("mov bx, DS:["+F_end+"]");
+            writerASM.writer.add("mov al, DS:[" + T_end + "]");
+            writerASM.writer.add("mov bx, DS:[" + F_end + "]");
 
-            if(T_op == 2){
+            if (T_op == 2) {
                 writerASM.writer.add("cwd");
                 writerASM.writer.add("mov cx, ax");
                 writerASM.writer.add("cwd");
@@ -1026,13 +1036,13 @@ public class SyntaticAnalysis {
                     break;
             }
             T_end = memory.newTemp();
-            writerASM.writer.add("mov DS:["+T_end+"], ax");
+            writerASM.writer.add("mov DS:[" + T_end + "], ax");
         }
     }
 
     //Proc F
     public void F() throws Exception {
-       boolean pos = false;
+        boolean pos = false;
         if (actualSymbol.getSymbol() == symbolTable.APARENTESES) {
             casaToken(symbolTable.APARENTESES);
             Exp();
@@ -1048,28 +1058,29 @@ public class SyntaticAnalysis {
             }
             F_type = typeLogic;
             F_endTemp = memory.newTemp();
-            writerASM.writer.add("mov al, DS:["+F_end+"]");
-            writerASM.writer.add("not al");
-            writerASM.writer.add("mov DS:["+F_endTemp+"], al");
+            writerASM.writer.add("mov al, DS:[" + F_end + "]");
+            writerASM.writer.add("neg al");
+            writerASM.writer.add("add al,1");
+            writerASM.writer.add("mov DS:[" + F_endTemp + "], al");
             F_end = F_endTemp;
         } else if (actualSymbol.getSymbol() == symbolTable.VALOR) {
             F_type = actualSymbol.getTipo();
-            if(F_type.equals(typeString)){
+            if (F_type.equals(typeString)) {
                 writerASM.writer.add("dseg SEGMENT PUBLIC");
-                writerASM.writer.add("byte "+actualSymbol.getLexema().substring(0,actualSymbol.getLexema().length()-1)+"$"+actualSymbol.getLexema().charAt(actualSymbol.getLexema().length()- 1));
+                writerASM.writer.add("byte " + actualSymbol.getLexema().substring(0, actualSymbol.getLexema().length() - 1) + "$" + actualSymbol.getLexema().charAt(actualSymbol.getLexema().length() - 1));
                 writerASM.writer.add("dseg ENDS");
                 F_end = memory.count;
-                memory.toAllocateString(actualSymbol.getLexema().length()-1);
-            }else{
+                memory.toAllocateString(actualSymbol.getLexema().length() - 1);
+            } else {
                 String lexTemp = actualSymbol.getLexema();
                 F_end = memory.newTemp();
-                writerASM.writer.add("mov ax, "+lexTemp);
-                writerASM.writer.add("mov DS:["+F_end+"], al");
-                if(actualSymbol.getTipo().equals(typeInteger)){
+                writerASM.writer.add("mov ax, " + lexTemp);
+                writerASM.writer.add("mov DS:[" + F_end + "], al");
+                if (actualSymbol.getTipo().equals(typeInteger)) {
                     memory.toAllocateTempInteger();
-                }else if(actualSymbol.getTipo().equals(typeCharacter)){
+                } else if (actualSymbol.getTipo().equals(typeCharacter)) {
                     memory.toAllocateTempCharacter();
-                }else if(actualSymbol.getTipo().equals(typeHexa)){
+                } else if (actualSymbol.getTipo().equals(typeHexa)) {
                     memory.toAllocateTempInteger();
                 }
             }
@@ -1097,6 +1108,14 @@ public class SyntaticAnalysis {
                 casaToken(symbolTable.ACOLCHETES);
                 Exp();
                 F_end = Exp_end;
+                F_end = memory.newTemp();
+                writerASM.writer.add("mov ax, DS:["+Exp_end+"]");
+                if(F_type.equals(typeVectorInt)){
+                    writerASM.writer.add("add ax, "+Exp_end);
+                }
+                writerASM.writer.add("mov ax, "+tempToken.getEndereco());
+                writerASM.writer.add("mov ax, DS:[ax]");
+                writerASM.writer.add("mov DS:["+F_end+"], ax");
                 casaToken(symbolTable.FCOLCHETES);
             }
         }
