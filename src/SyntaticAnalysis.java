@@ -55,7 +55,7 @@ public class SyntaticAnalysis {
     public void startParsing(BufferedReader archive) throws Exception {
         actualSymbol = lexicalAnalysis.tokenization(archive);
         this.in = archive;
-      if (actualSymbol == null) {
+        if (actualSymbol == null) {
             actualSymbol = lexicalAnalysis.tokenization(archive);
         }
         S();
@@ -85,37 +85,37 @@ public class SyntaticAnalysis {
 
     //proc S
     public void S() throws Exception {
-       try{
-               writerASM.writer.add("sseg SEGMENT STACK ;inicio segmento da  pilha");
-               writerASM.writer.add("byte 4000h DUP(?) ;dimensiona a  pilha");
-               writerASM.writer.add("sseg ENDS ;fim segmento da pilha");
-               writerASM.writer.add("dseg SEGMENT PUBLIC ;inicio segmento de dados");
-               writerASM.writer.add("byte 4000h DUP(?) ;temporarios");
-               address = memory.toAllocateTemp();
-               while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.INT || actualSymbol.getSymbol() == symbolTable.CHAR
-                       || actualSymbol.getSymbol() == symbolTable.FINAL) {
-                   D();
-               }
-               writerASM.writer.add("dseg ENDS ;fim segmento de dados");
-               writerASM.writer.add("cseg SEGMENT PUBLIC ;inicio seg. codigo");
-               writerASM.writer.add("ASSUME CS:cseg, DS:dseg");
-               writerASM.writer.add("strt:");
-               writerASM.writer.add("mov ax, dseg");
-               writerASM.writer.add("mov ds, ax");
+        try {
+            writerASM.writer.add("sseg SEGMENT STACK ;inicio segmento da  pilha");
+            writerASM.writer.add("byte 4000h DUP(?) ;dimensiona a  pilha");
+            writerASM.writer.add("sseg ENDS ;fim segmento da pilha");
+            writerASM.writer.add("dseg SEGMENT PUBLIC ;inicio segmento de dados");
+            writerASM.writer.add("byte 4000h DUP(?) ;temporarios");
+            address = memory.toAllocateTemp();
+            while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.INT || actualSymbol.getSymbol() == symbolTable.CHAR
+                    || actualSymbol.getSymbol() == symbolTable.FINAL) {
+                D();
+            }
+            writerASM.writer.add("dseg ENDS ;fim segmento de dados");
+            writerASM.writer.add("cseg SEGMENT PUBLIC ;inicio seg. codigo");
+            writerASM.writer.add("ASSUME CS:cseg, DS:dseg");
+            writerASM.writer.add("strt:");
+            writerASM.writer.add("mov ax, dseg");
+            writerASM.writer.add("mov ds, ax");
 
-               while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR || actualSymbol.getSymbol() == symbolTable.IF
-                       || actualSymbol.getSymbol() == symbolTable.DOTCOMMA || actualSymbol.getSymbol() == symbolTable.READLN ||
-                       actualSymbol.getSymbol() == symbolTable.WRITE || actualSymbol.getSymbol() == symbolTable.WRITELN
-                       ) {
-                   C();
-               }
-           }catch(NullPointerException e){
-               writerASM.writer.add("mov ah, 4Ch");
-               writerASM.writer.add("int 21h");
-               writerASM.writer.add("cseg ENDS ;fim seg. codigo");
-               writerASM.writer.add("END strt  ;fim programa ");
-               writerASM.createASM();
-               writerASM.cleanUp();
+            while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR || actualSymbol.getSymbol() == symbolTable.IF
+                    || actualSymbol.getSymbol() == symbolTable.DOTCOMMA || actualSymbol.getSymbol() == symbolTable.READLN ||
+                    actualSymbol.getSymbol() == symbolTable.WRITE || actualSymbol.getSymbol() == symbolTable.WRITELN
+                    ) {
+                C();
+            }
+        } catch (NullPointerException e) {
+            writerASM.writer.add("mov ah, 4Ch");
+            writerASM.writer.add("int 21h");
+            writerASM.writer.add("cseg ENDS ;fim seg. codigo");
+            writerASM.writer.add("END strt  ;fim programa ");
+            writerASM.createASM();
+            writerASM.cleanUp();
 
         }
     }
@@ -389,156 +389,207 @@ public class SyntaticAnalysis {
         String id_temp = "";
         String value = "";
         Symbol tmp;
-     ///   while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
-      //         || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
-     ///           actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
-     //          actualSymbol.getSymbol() == symbolTable.WRITELN) {
+        ///   while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+        //         || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+        ///           actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+        //          actualSymbol.getSymbol() == symbolTable.WRITELN) {
 
-            if (actualSymbol.getSymbol() == symbolTable.FOR) {
-                casaToken(symbolTable.FOR);
-                if (actualSymbol.getClasse().equals("")) {
-                    errorUnT(actualSymbol.getLexema());
-                } else if (!actualSymbol.getTipo().equals(typeInteger)) {
+        if (actualSymbol.getSymbol() == symbolTable.FOR) {
+            casaToken(symbolTable.FOR);
+            if (actualSymbol.getClasse().equals("")) {
+                errorUnT(actualSymbol.getLexema());
+            } else if (!actualSymbol.getTipo().equals(typeInteger)) {
+                errorIT();
+            }
+            id_temp = actualSymbol.getTipo();
+            casaToken(symbolTable.ID);
+            casaToken(symbolTable.ATRIB);
+            String beginLabel = label.newLabel();
+            String endLabel = label.newLabel();
+            writerASM.writer.add(beginLabel + ":");
+            Exp();
+            writerASM.writer.add("mov ax, DS:[" + actualSymbol.getEndereco() + "]");
+            tempToken.setEndereco(Exp_end);
+            if (!Exp_type.equals(typeInteger)) {
+                errorIT();
+            }
+
+            casaToken(symbolTable.TO);
+
+            Exp();
+            writerASM.writer.add("mov bx, DS:[" + Exp_end + "]");
+            writerASM.writer.add("mov bx, DS:[" + tempToken.getEndereco() + "]");
+            writerASM.writer.add("cmp ax, bx");
+            writerASM.writer.add("jg " + endLabel);
+            if (!Exp_type.equals(typeInteger)) {
+                errorIT();
+            }
+            if (actualSymbol.getSymbol() == symbolTable.STEP) {
+                casaToken(symbolTable.STEP);
+                tempToken = actualSymbol;
+                writerASM.writer.add("mov bx, 1");
+                writerASM.writer.add("mov DS:["+tempToken.getEndereco()+"], bx");
+                writerASM.writer.add("jmp " + beginLabel);
+                writerASM.writer.add(endLabel+":");
+                casaToken(symbolTable.VALOR);
+                if (!tempToken.getTipo().equals(typeInteger)) {
                     errorIT();
                 }
-                id_temp = actualSymbol.getTipo();
-                String beginLabel = label.newLabel();
-                String endLabel = label.newLabel();
-                  writerASM.writer.add(beginLabel+":");
-
-                casaToken(symbolTable.ID);
-                casaToken(symbolTable.ATRIB);
-
-                Exp();
-                   writerASM.writer.add("mov ax, DS:["+actualSymbol.getEndereco()+"]");
-                if (!Exp_type.equals(typeInteger)) {
-                    errorIT();
-                }
-
-                casaToken(symbolTable.TO);
-
-                Exp();
-                   writerASM.writer.add("mov bx, DS:["+Exp_end+"]");
-                if (!Exp_type.equals(typeInteger)) {
-                    errorIT();
-                }
-                if (actualSymbol.getSymbol() == symbolTable.STEP) {
-                    casaToken(symbolTable.STEP);
-                    tempToken = actualSymbol;
-                           writerASM.writer.add("sub cx, 1");
-                              writerASM.writer.add("jmp "+beginLabel);
-                    casaToken(symbolTable.VALOR);
-                    if (!tempToken.getTipo().equals(typeInteger)) {
-                        errorIT();
-                    }
-                }
-                casaToken(symbolTable.DO);
+            }
+            casaToken(symbolTable.DO);
                 C1();
-                       writerASM.writer.add("cmp ax, bx");
-                       writerASM.writer.add("jg "+endLabel);
-                      writerASM.writer.add("add ax, 1");
-                      writerASM.writer.add("jmp "+beginLabel);
-                      writerASM.writer.add(endLabel+":");
+            writerASM.writer.add("add ax, 1");
+            writerASM.writer.add("jmp " + beginLabel);
+            writerASM.writer.add(endLabel + ":");
 
-            } else if (actualSymbol.getSymbol() == symbolTable.IF) {
-                casaToken(symbolTable.IF);
-                String falseLabel = label.newLabel();
-                String endLabel = label.newLabel();
-                Exp();
-                if (!Exp_type.equals(typeLogic)) {
-                    errorIT();
-                }
-                writerASM.writer.add("mov ax, DS:[" + Exp_end + "]; Aqui ");
-                writerASM.writer.add("cmp ax, 0");
-                writerASM.writer.add("je " + falseLabel);
-                casaToken(symbolTable.THEN);
+        } else if (actualSymbol.getSymbol() == symbolTable.IF) {
+            casaToken(symbolTable.IF);
+            String falseLabel = label.newLabel();
+            String endLabel = label.newLabel();
+            Exp();
+            if (!Exp_type.equals(typeLogic)) {
+                errorIT();
+            }
+            writerASM.writer.add("mov ax, DS:[" + Exp_end + "]; Aqui ");
+            writerASM.writer.add("cmp ax, 0");
+            writerASM.writer.add("je " + falseLabel);
+            casaToken(symbolTable.THEN);
+            C1();
+            if (actualSymbol.getSymbol() == symbolTable.ELSE) {
+                casaToken(symbolTable.ELSE);
+                writerASM.writer.add("jmp " + endLabel);
+                writerASM.writer.add(falseLabel + ":");
                 C1();
-                if (actualSymbol.getSymbol() == symbolTable.ELSE) {
-                    casaToken(symbolTable.ELSE);
-                    writerASM.writer.add("jmp " + endLabel);
-                    writerASM.writer.add(falseLabel + ":");
-                    C1();
-                    writerASM.writer.add(endLabel + ":");
-                }
+                writerASM.writer.add(endLabel + ":");
+            }
 
-            } else if (actualSymbol.getSymbol() == symbolTable.READLN) {
-                casaToken(symbolTable.READLN);
-                casaToken(symbolTable.APARENTESES);
+        } else if (actualSymbol.getSymbol() == symbolTable.READLN) {
+            casaToken(symbolTable.READLN);
+            casaToken(symbolTable.APARENTESES);
+            Exp();
+            if (Exp_type.equals(typeHexa)) {
+                errorIT();
+            }
+            tmp = actualSymbol;
+            int readerAdd = memory.toAllocateTempString();
+            memory.countTemp += 3;
+            writerASM.writer.add("mov dx, " + readerAdd);
+            writerASM.writer.add("mov al, 0FFh");
+            writerASM.writer.add("mov ds:[" + readerAdd + "], al");
+            writerASM.writer.add("mov ah, 0Ah");
+            writerASM.writer.add("int 21h");
+            writerASM.writer.add("mov ah, 02h");
+            writerASM.writer.add("mov dl, 0Dh");
+            writerASM.writer.add("int 21h");
+            writerASM.writer.add("mov DL, 0Ah");
+            writerASM.writer.add("int 21h");
+            writerASM.writer.add("mov di, " + readerAdd + 2);
+
+            if (!tmp.getTipo().equals(typeString)) {
+                writerASM.writer.add("mov ax, 0");
+                writerASM.writer.add("mov cx, 10");
+                writerASM.writer.add("mov dx, 1");
+                writerASM.writer.add("mov bh, 0");
+                writerASM.writer.add("mov bl, ds:[di]");
+                writerASM.writer.add("cmp bx, 2Dh");
+                String lab = label.newLabel();
+                writerASM.writer.add("jne " + lab);
+                writerASM.writer.add("mov dx, -1");
+                writerASM.writer.add("add di, 1");
+                writerASM.writer.add("mov bl, ds:[di]");
+                writerASM.writer.add(lab + ":");
+                writerASM.writer.add("push dx");
+                writerASM.writer.add("mov dx, 0");
+                String lab1 = label.newLabel();
+                writerASM.writer.add(lab1 + ":");
+                writerASM.writer.add("cmp bx, 0Dh");
+                String lab2 = label.newLabel();
+                writerASM.writer.add("je " + lab2);
+                writerASM.writer.add("imul cx");
+                writerASM.writer.add("add bx, -48");
+                writerASM.writer.add("add ax, bx");
+                writerASM.writer.add("add di, 1");
+                writerASM.writer.add("mov bh, 0");
+                writerASM.writer.add("mov bl, ds:[di]");
+                writerASM.writer.add("jmp " + lab1);
+                writerASM.writer.add(lab2 + ":");
+                writerASM.writer.add("pop cx");
+                writerASM.writer.add("imul cx");
+                writerASM.writer.add("mov DS:[" + tmp.getEndereco() + "], ax");
+            } else {
+                writerASM.writer.add("mov si, " + tmp.getEndereco());
+                String labString = label.newLabel();
+                writerASM.writer.add(labString + ":");
+                writerASM.writer.add("mov al, ds:[di]");
+                writerASM.writer.add("cmp al, 0dh ;verifica fim string");
+                String lab = label.newLabel();
+                writerASM.writer.add("je " + lab + " ;salta se fim string");
+                writerASM.writer.add("mov ds:[si], al ;pr�ximo caractere");
+                writerASM.writer.add("add di, 1 ;incrementa base");
+                writerASM.writer.add("add si, 1");
+                writerASM.writer.add("jmp " + labString + " ;loop");
+                writerASM.writer.add(lab + ":");
+                writerASM.writer.add("mov al, 024h ;fim de string");
+                writerASM.writer.add("mov ds:[si], al ;grava '$'");
+            }
+            casaToken(symbolTable.FPARENTESES);
+            casaToken(symbolTable.DOTCOMMA);
+
+        } else if (actualSymbol.getSymbol() == symbolTable.WRITE) {
+            int StringAdd = memory.newTemp();
+            casaToken(symbolTable.WRITE);
+            casaToken(symbolTable.APARENTESES);
+            Exp();
+            if (Exp_type.equals(typeCharacter) && !Exp_type.equals(typeInteger) && !Exp_type.equals(typeString)) {
+                errorIT();
+            }
+
+            if (Exp_type.equals(typeString)) {
+                writerASM.writer.add("mov dx, " + Exp_end);
+                writerASM.writer.add("mov ah, 09h");
+                writerASM.writer.add("int 21h");
+            } else {
+                writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
+                writerASM.writer.add("mov di, " + StringAdd);
+                writerASM.writer.add("mov cx, 0 ;contador");
+                writerASM.writer.add("cmp ax,0 ;verifica sinal");
+                String lab = label.newLabel();
+                writerASM.writer.add("jge " + lab);
+                writerASM.writer.add("mov bl, 2Dh");
+                writerASM.writer.add("mov ds:[di], bl");
+                writerASM.writer.add("add di, 1");
+                writerASM.writer.add("neg ax");
+                writerASM.writer.add(lab + ":");
+                writerASM.writer.add("mov bx, 10 ");
+                String lab1 = label.newLabel();
+                writerASM.writer.add(lab1 + ":");
+                writerASM.writer.add("add cx, 1 ");
+                writerASM.writer.add("mov dx, 0 ");
+                writerASM.writer.add("idiv bx ");
+                writerASM.writer.add("push dx ");
+                writerASM.writer.add("cmp ax, 0 ");
+                writerASM.writer.add("jne " + lab1);
+                String lab2 = label.newLabel();
+                writerASM.writer.add(lab2 + ":");
+                writerASM.writer.add("pop dx");
+                writerASM.writer.add("add dx, 30h");
+                writerASM.writer.add("mov ds:[di],dl ");
+                writerASM.writer.add("add di, 1 ");
+                writerASM.writer.add("add cx, -1 ");
+                writerASM.writer.add("cmp cx, 0 ");
+                writerASM.writer.add("jne " + lab2);
+                writerASM.writer.add("mov dl, 024h");
+                writerASM.writer.add("mov ds:[di], dl");
+                writerASM.writer.add("mov dx, " + StringAdd);
+                writerASM.writer.add("mov ah, 09h");
+                writerASM.writer.add("int 21h");
+            }
+
+            while (actualSymbol.getSymbol() == symbolTable.COMMA) {
+
+                casaToken(symbolTable.COMMA);
                 Exp();
-                if (Exp_type.equals(typeHexa)) {
-                    errorIT();
-                }
-                tmp = actualSymbol;
-                int readerAdd = memory.toAllocateTempString();
-                memory.countTemp += 3;
-                writerASM.writer.add("mov dx, " + readerAdd);
-                writerASM.writer.add("mov al, 0FFh");
-                writerASM.writer.add("mov ds:[" + readerAdd + "], al");
-                writerASM.writer.add("mov ah, 0Ah");
-                writerASM.writer.add("int 21h");
-                writerASM.writer.add("mov ah, 02h");
-                writerASM.writer.add("mov dl, 0Dh");
-                writerASM.writer.add("int 21h");
-                writerASM.writer.add("mov DL, 0Ah");
-                writerASM.writer.add("int 21h");
-                writerASM.writer.add("mov di, " + readerAdd + 2);
-
-                if (!tmp.getTipo().equals(typeString)) {
-                    writerASM.writer.add("mov ax, 0");
-                    writerASM.writer.add("mov cx, 10");
-                    writerASM.writer.add("mov dx, 1");
-                    writerASM.writer.add("mov bh, 0");
-                    writerASM.writer.add("mov bl, ds:[di]");
-                    writerASM.writer.add("cmp bx, 2Dh");
-                    String lab = label.newLabel();
-                    writerASM.writer.add("jne " + lab);
-                    writerASM.writer.add("mov dx, -1");
-                    writerASM.writer.add("add di, 1");
-                    writerASM.writer.add("mov bl, ds:[di]");
-                    writerASM.writer.add(lab + ":");
-                    writerASM.writer.add("push dx");
-                    writerASM.writer.add("mov dx, 0");
-                    String lab1 = label.newLabel();
-                    writerASM.writer.add(lab1 + ":");
-                    writerASM.writer.add("cmp bx, 0Dh");
-                    String lab2 = label.newLabel();
-                    writerASM.writer.add("je " + lab2);
-                    writerASM.writer.add("imul cx");
-                    writerASM.writer.add("add bx, -48");
-                    writerASM.writer.add("add ax, bx");
-                    writerASM.writer.add("add di, 1");
-                    writerASM.writer.add("mov bh, 0");
-                    writerASM.writer.add("mov bl, ds:[di]");
-                    writerASM.writer.add("jmp " + lab1);
-                    writerASM.writer.add(lab2 + ":");
-                    writerASM.writer.add("pop cx");
-                    writerASM.writer.add("imul cx");
-                    writerASM.writer.add("mov DS:[" + tmp.getEndereco() + "], ax");
-                } else {
-                    writerASM.writer.add("mov si, " + tmp.getEndereco());
-                    String labString = label.newLabel();
-                    writerASM.writer.add(labString + ":");
-                    writerASM.writer.add("mov al, ds:[di]");
-                    writerASM.writer.add("cmp al, 0dh ;verifica fim string");
-                    String lab = label.newLabel();
-                    writerASM.writer.add("je " + lab + " ;salta se fim string");
-                    writerASM.writer.add("mov ds:[si], al ;pr�ximo caractere");
-                    writerASM.writer.add("add di, 1 ;incrementa base");
-                    writerASM.writer.add("add si, 1");
-                    writerASM.writer.add("jmp " + labString + " ;loop");
-                    writerASM.writer.add(lab + ":");
-                    writerASM.writer.add("mov al, 024h ;fim de string");
-                    writerASM.writer.add("mov ds:[si], al ;grava '$'");
-                }
-                casaToken(symbolTable.FPARENTESES);
-                casaToken(symbolTable.DOTCOMMA);
-
-            } else if (actualSymbol.getSymbol() == symbolTable.WRITE) {
-                int StringAdd = memory.newTemp();
-                casaToken(symbolTable.WRITE);
-                casaToken(symbolTable.APARENTESES);
-                Exp();
-                if (Exp_type.equals(typeCharacter) && !Exp_type.equals(typeInteger) && !Exp_type.equals(typeString)) {
+                if (!Exp_type.equals(typeCharacter) && !Exp_type.equals(typeInteger) && !Exp_type.equals(typeString)) {
                     errorIT();
                 }
 
@@ -582,63 +633,65 @@ public class SyntaticAnalysis {
                     writerASM.writer.add("mov ah, 09h");
                     writerASM.writer.add("int 21h");
                 }
+            }
+            casaToken(symbolTable.FPARENTESES);
+            casaToken(symbolTable.DOTCOMMA);
 
-                while (actualSymbol.getSymbol() == symbolTable.COMMA) {
-
-                    casaToken(symbolTable.COMMA);
-                    Exp();
-                    if (!Exp_type.equals(typeCharacter) && !Exp_type.equals(typeInteger) && !Exp_type.equals(typeString)) {
-                        errorIT();
-                    }
-
-                    if (Exp_type.equals(typeString)) {
-                        writerASM.writer.add("mov dx, " + Exp_end);
-                        writerASM.writer.add("mov ah, 09h");
-                        writerASM.writer.add("int 21h");
-                    } else {
-                        writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
-                        writerASM.writer.add("mov di, " + StringAdd);
-                        writerASM.writer.add("mov cx, 0 ;contador");
-                        writerASM.writer.add("cmp ax,0 ;verifica sinal");
-                        String lab = label.newLabel();
-                        writerASM.writer.add("jge " + lab);
-                        writerASM.writer.add("mov bl, 2Dh");
-                        writerASM.writer.add("mov ds:[di], bl");
-                        writerASM.writer.add("add di, 1");
-                        writerASM.writer.add("neg ax");
-                        writerASM.writer.add(lab + ":");
-                        writerASM.writer.add("mov bx, 10 ");
-                        String lab1 = label.newLabel();
-                        writerASM.writer.add(lab1 + ":");
-                        writerASM.writer.add("add cx, 1 ");
-                        writerASM.writer.add("mov dx, 0 ");
-                        writerASM.writer.add("idiv bx ");
-                        writerASM.writer.add("push dx ");
-                        writerASM.writer.add("cmp ax, 0 ");
-                        writerASM.writer.add("jne " + lab1);
-                        String lab2 = label.newLabel();
-                        writerASM.writer.add(lab2 + ":");
-                        writerASM.writer.add("pop dx");
-                        writerASM.writer.add("add dx, 30h");
-                        writerASM.writer.add("mov ds:[di],dl ");
-                        writerASM.writer.add("add di, 1 ");
-                        writerASM.writer.add("add cx, -1 ");
-                        writerASM.writer.add("cmp cx, 0 ");
-                        writerASM.writer.add("jne " + lab2);
-                        writerASM.writer.add("mov dl, 024h");
-                        writerASM.writer.add("mov ds:[di], dl");
-                        writerASM.writer.add("mov dx, " + StringAdd);
-                        writerASM.writer.add("mov ah, 09h");
-                        writerASM.writer.add("int 21h");
-                    }
-                }
-                casaToken(symbolTable.FPARENTESES);
-                casaToken(symbolTable.DOTCOMMA);
-
-            } else if (actualSymbol.getSymbol() == symbolTable.WRITELN) {
-                int StringAdd = memory.newTemp();
-                casaToken(symbolTable.WRITELN);
-                casaToken(symbolTable.APARENTESES);
+        } else if (actualSymbol.getSymbol() == symbolTable.WRITELN) {
+            int StringAdd = memory.newTemp();
+            casaToken(symbolTable.WRITELN);
+            casaToken(symbolTable.APARENTESES);
+            Exp();
+            if (!Exp_type.equals(typeCharacter) && !Exp_type.equals(typeInteger) && !Exp_type.equals(typeString) && !Exp_type.equals(typeVectorChar)) {
+                errorIT();
+            }
+            if (Exp_type.equals(typeString)) {
+                writerASM.writer.add("mov dx, " + Exp_end);
+                writerASM.writer.add("mov ah, 09h");
+                writerASM.writer.add("int 21h");
+            } else {
+                writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
+                writerASM.writer.add("mov di, " + StringAdd);
+                writerASM.writer.add("mov cx, 0 ;contador");
+                writerASM.writer.add("cmp ax,0 ;verifica sinal");
+                String lab = label.newLabel();
+                writerASM.writer.add("jge " + lab);
+                writerASM.writer.add("mov bl, 2Dh");
+                writerASM.writer.add("mov ds:[di], bl");
+                writerASM.writer.add("add di, 1");
+                writerASM.writer.add("neg ax");
+                writerASM.writer.add(lab + ":");
+                writerASM.writer.add("mov bx, 10 ");
+                String lab1 = label.newLabel();
+                writerASM.writer.add(lab1 + ":");
+                writerASM.writer.add("add cx, 1 ");
+                writerASM.writer.add("mov dx, 0 ");
+                writerASM.writer.add("idiv bx ");
+                writerASM.writer.add("push dx ");
+                writerASM.writer.add("cmp ax, 0 ");
+                writerASM.writer.add("jne " + lab1);
+                String lab2 = label.newLabel();
+                writerASM.writer.add(lab2 + ":");
+                writerASM.writer.add("pop dx");
+                writerASM.writer.add("add dx, 30h");
+                writerASM.writer.add("mov ds:[di],dl ");
+                writerASM.writer.add("add di, 1 ");
+                writerASM.writer.add("add cx, -1 ");
+                writerASM.writer.add("cmp cx, 0 ");
+                writerASM.writer.add("jne " + lab2);
+                writerASM.writer.add("mov dl, 024h");
+                writerASM.writer.add("mov ds:[di], dl");
+                writerASM.writer.add("mov dx, " + StringAdd);
+                writerASM.writer.add("mov ah, 09h");
+                writerASM.writer.add("int 21h");
+                writerASM.writer.add("mov ah, 02h");
+                writerASM.writer.add("mov dl, 0Dh");
+                writerASM.writer.add("int 21h");
+                writerASM.writer.add("mov DL, 0Ah");
+                writerASM.writer.add("int 21h");
+            }
+            while (actualSymbol.getSymbol() == symbolTable.COMMA) {
+                casaToken(symbolTable.COMMA);
                 Exp();
                 if (!Exp_type.equals(typeCharacter) && !Exp_type.equals(typeInteger) && !Exp_type.equals(typeString) && !Exp_type.equals(typeVectorChar)) {
                     errorIT();
@@ -688,114 +741,63 @@ public class SyntaticAnalysis {
                     writerASM.writer.add("mov DL, 0Ah");
                     writerASM.writer.add("int 21h");
                 }
-                while (actualSymbol.getSymbol() == symbolTable.COMMA) {
-                    casaToken(symbolTable.COMMA);
-                    Exp();
-                    if (!Exp_type.equals(typeCharacter) && !Exp_type.equals(typeInteger) && !Exp_type.equals(typeString) && !Exp_type.equals(typeVectorChar)) {
-                        errorIT();
-                    }
-                    if (Exp_type.equals(typeString)) {
-                        writerASM.writer.add("mov dx, " + Exp_end);
-                        writerASM.writer.add("mov ah, 09h");
-                        writerASM.writer.add("int 21h");
-                    } else {
-                        writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
-                        writerASM.writer.add("mov di, " + StringAdd);
-                        writerASM.writer.add("mov cx, 0 ;contador");
-                        writerASM.writer.add("cmp ax,0 ;verifica sinal");
-                        String lab = label.newLabel();
-                        writerASM.writer.add("jge " + lab);
-                        writerASM.writer.add("mov bl, 2Dh");
-                        writerASM.writer.add("mov ds:[di], bl");
-                        writerASM.writer.add("add di, 1");
-                        writerASM.writer.add("neg ax");
-                        writerASM.writer.add(lab + ":");
-                        writerASM.writer.add("mov bx, 10 ");
-                        String lab1 = label.newLabel();
-                        writerASM.writer.add(lab1 + ":");
-                        writerASM.writer.add("add cx, 1 ");
-                        writerASM.writer.add("mov dx, 0 ");
-                        writerASM.writer.add("idiv bx ");
-                        writerASM.writer.add("push dx ");
-                        writerASM.writer.add("cmp ax, 0 ");
-                        writerASM.writer.add("jne " + lab1);
-                        String lab2 = label.newLabel();
-                        writerASM.writer.add(lab2 + ":");
-                        writerASM.writer.add("pop dx");
-                        writerASM.writer.add("add dx, 30h");
-                        writerASM.writer.add("mov ds:[di],dl ");
-                        writerASM.writer.add("add di, 1 ");
-                        writerASM.writer.add("add cx, -1 ");
-                        writerASM.writer.add("cmp cx, 0 ");
-                        writerASM.writer.add("jne " + lab2);
-                        writerASM.writer.add("mov dl, 024h");
-                        writerASM.writer.add("mov ds:[di], dl");
-                        writerASM.writer.add("mov dx, " + StringAdd);
-                        writerASM.writer.add("mov ah, 09h");
-                        writerASM.writer.add("int 21h");
-                        writerASM.writer.add("mov ah, 02h");
-                        writerASM.writer.add("mov dl, 0Dh");
-                        writerASM.writer.add("int 21h");
-                        writerASM.writer.add("mov DL, 0Ah");
-                        writerASM.writer.add("int 21h");
-                    }
-                }
-
-                casaToken(symbolTable.FPARENTESES);
-                casaToken(symbolTable.DOTCOMMA);
-
-            } else if (actualSymbol.getSymbol() == symbolTable.ID) {
-                if (actualSymbol.getClasse().equals("")) {
-                    errorUnT(actualSymbol.getLexema());
-                } else if (actualSymbol.getClasse().equals(CONST)) {
-                    errorIC(actualSymbol.getLexema());
-                }
-                tempToken = actualSymbol;
-                tmp = actualSymbol;
-                casaToken(symbolTable.ID);
-                if (actualSymbol.getSymbol() == symbolTable.ACOLCHETES) {
-                    casaToken(symbolTable.ACOLCHETES);
-                    Exp();
-                    casaToken(symbolTable.FCOLCHETES);
-                    if (tempToken.getTipo().equals(typeCharacter)) {
-                        tempToken.setTipo(typeVectorChar);
-                    } else if (tempToken.getTipo().equals(typeInteger)) {
-                        tempToken.setTipo(typeVectorInt);
-                    }
-                }
-                casaToken(symbolTable.ATRIB);
-                if (actualSymbol.getTipo().equals(typeString)) {
-                    value = actualSymbol.getLexema().substring(1, actualSymbol.getLexema().length() - 1);
-                    value += "$";
-                }
-                Exp();
-                Exp_type = ExpS_type;
-                if (Exp_type.equals(typeVectorChar) && tempToken.getTipo().equals(typeCharacter)) {
-                    if (Exp_type.equals(typeString)) {
-                        int tam = lexicalAnalysis.search(tempToken.getLexema()).tamanho;
-                        if (value.length() > tam) {
-                            errorEV();
-                        }
-                    }
-                }else if (tempToken.getTipo().equals(typeCharacter) && (!Exp_type.equals(typeCharacter) || !Exp_type.equals(typeInteger))){
-                   errorIT();
-                } else if (tempToken.getTipo().equals(typeInteger)  && (!Exp_type.equals(typeInteger))){
-                    errorIT();
-                }else if(tempToken.getTipo().equals(typeVectorInt) && (!Exp_type.equals(typeInteger) ||
-                        !Exp_type.equals(typeInteger)) ){
-                    errorIT();
-                }
-
-                writerASM.writer.add("mov al, DS:[" + Exp_end + "]");
-                if (Exp_type.equals(typeCharacter)) {
-                    writerASM.writer.add("mov ah, 0");
-                }
-                writerASM.writer.add("mov DS:[" + tmp.getEndereco() + "], ax");
-                casaToken(symbolTable.DOTCOMMA);
-
-            } else if (actualSymbol.getSymbol() == symbolTable.DOTCOMMA) {
-                casaToken(symbolTable.DOTCOMMA);
             }
+
+            casaToken(symbolTable.FPARENTESES);
+            casaToken(symbolTable.DOTCOMMA);
+
+        } else if (actualSymbol.getSymbol() == symbolTable.ID) {
+            if (actualSymbol.getClasse().equals("")) {
+                errorUnT(actualSymbol.getLexema());
+            } else if (actualSymbol.getClasse().equals(CONST)) {
+                errorIC(actualSymbol.getLexema());
+            }
+            tempToken = actualSymbol;
+            tmp = actualSymbol;
+            casaToken(symbolTable.ID);
+            if (actualSymbol.getSymbol() == symbolTable.ACOLCHETES) {
+                casaToken(symbolTable.ACOLCHETES);
+                Exp();
+                casaToken(symbolTable.FCOLCHETES);
+                if (tempToken.getTipo().equals(typeCharacter)) {
+                    tempToken.setTipo(typeVectorChar);
+                } else if (tempToken.getTipo().equals(typeInteger)) {
+                    tempToken.setTipo(typeVectorInt);
+                }
+            }
+            casaToken(symbolTable.ATRIB);
+            if (actualSymbol.getTipo().equals(typeString)) {
+                value = actualSymbol.getLexema().substring(1, actualSymbol.getLexema().length() - 1);
+                value += "$";
+            }
+            Exp();
+            Exp_type = ExpS_type;
+            if (Exp_type.equals(typeVectorChar) && tempToken.getTipo().equals(typeCharacter)) {
+                if (Exp_type.equals(typeString)) {
+                    int tam = lexicalAnalysis.search(tempToken.getLexema()).tamanho;
+                    if (value.length() > tam) {
+                        errorEV();
+                    }
+                }
+            } else if (tempToken.getTipo().equals(typeCharacter) && (!Exp_type.equals(typeCharacter) || !Exp_type.equals(typeInteger))) {
+                errorIT();
+            } else if (tempToken.getTipo().equals(typeInteger) && (!Exp_type.equals(typeInteger))) {
+                errorIT();
+            } else if (tempToken.getTipo().equals(typeVectorInt) && (!Exp_type.equals(typeInteger) ||
+                    !Exp_type.equals(typeInteger))) {
+                errorIT();
+            }
+
+            writerASM.writer.add("mov al, DS:[" + Exp_end + "]");
+            if (Exp_type.equals(typeCharacter)) {
+                writerASM.writer.add("mov ah, 0");
+            }
+            writerASM.writer.add("mov DS:[" + tmp.getEndereco() + "], ax");
+            casaToken(symbolTable.DOTCOMMA);
+
+        } else if (actualSymbol.getSymbol() == symbolTable.DOTCOMMA) {
+            casaToken(symbolTable.DOTCOMMA);
+        }
         memory.resetTemp();
 
     }
@@ -806,20 +808,20 @@ public class SyntaticAnalysis {
             casaToken(symbolTable.BEGIN);
             //   C();
 
-             while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
-                   || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
-                 actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
-               actualSymbol.getSymbol() == symbolTable.WRITELN) {
-                C();
-            }
-            casaToken(symbolTable.END);
-        } else {
-            while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+            while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
                     || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
                     actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
                     actualSymbol.getSymbol() == symbolTable.WRITELN) {
                 C();
             }
+            casaToken(symbolTable.END);
+        } else {
+          //  while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+              //      || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+            //        actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+            //        actualSymbol.getSymbol() == symbolTable.WRITELN) {
+                C();
+         //   }
 
         }
     }
@@ -1120,13 +1122,13 @@ public class SyntaticAnalysis {
                 Exp();
                 F_end = Exp_end;
                 F_end = memory.newTemp();
-                writerASM.writer.add("mov ax, DS:["+Exp_end+"]");
-                if(F_type.equals(typeVectorInt)){
-                    writerASM.writer.add("add ax, "+Exp_end);
+                writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
+                if (F_type.equals(typeVectorInt)) {
+                    writerASM.writer.add("add ax, " + Exp_end);
                 }
-                writerASM.writer.add("mov ax, "+tempToken.getEndereco());
+                writerASM.writer.add("mov ax, " + tempToken.getEndereco());
                 writerASM.writer.add("mov ax, DS:[ax]");
-                writerASM.writer.add("mov DS:["+F_end+"], ax");
+                writerASM.writer.add("mov DS:[" + F_end + "], ax");
                 casaToken(symbolTable.FCOLCHETES);
             }
         }
