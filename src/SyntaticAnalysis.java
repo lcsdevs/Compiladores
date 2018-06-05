@@ -55,7 +55,7 @@ public class SyntaticAnalysis {
     public void startParsing(BufferedReader archive) throws Exception {
         actualSymbol = lexicalAnalysis.tokenization(archive);
         this.in = archive;
-        if (actualSymbol == null) {
+      if (actualSymbol == null) {
             actualSymbol = lexicalAnalysis.tokenization(archive);
         }
         S();
@@ -85,35 +85,39 @@ public class SyntaticAnalysis {
 
     //proc S
     public void S() throws Exception {
-        writerASM.writer.add("sseg SEGMENT STACK ;inicio segmento da  pilha");
-        writerASM.writer.add("byte 4000h DUP(?) ;dimensiona a  pilha");
-        writerASM.writer.add("sseg ENDS ;fim segmento da pilha");
-        writerASM.writer.add("dseg SEGMENT PUBLIC ;inicio segmento de dados");
-        writerASM.writer.add("byte 4000h DUP(?) ;temporarios");
-        address = memory.toAllocateTemp();
-        while (actualSymbol.getSymbol() == symbolTable.INT || actualSymbol.getSymbol() == symbolTable.CHAR
-                || actualSymbol.getSymbol() == symbolTable.FINAL) {
-            D();
-        }
-        writerASM.writer.add("dseg ENDS ;fim segmento de dados");
-        writerASM.writer.add("cseg SEGMENT PUBLIC ;inicio seg. codigo");
-        writerASM.writer.add("ASSUME CS:cseg, DS:dseg");
-        writerASM.writer.add("strt:");
-        writerASM.writer.add("mov ax, dseg");
-        writerASM.writer.add("mov ds, ax");
+       try{
+               writerASM.writer.add("sseg SEGMENT STACK ;inicio segmento da  pilha");
+               writerASM.writer.add("byte 4000h DUP(?) ;dimensiona a  pilha");
+               writerASM.writer.add("sseg ENDS ;fim segmento da pilha");
+               writerASM.writer.add("dseg SEGMENT PUBLIC ;inicio segmento de dados");
+               writerASM.writer.add("byte 4000h DUP(?) ;temporarios");
+               address = memory.toAllocateTemp();
+               while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.INT || actualSymbol.getSymbol() == symbolTable.CHAR
+                       || actualSymbol.getSymbol() == symbolTable.FINAL) {
+                   D();
+               }
+               writerASM.writer.add("dseg ENDS ;fim segmento de dados");
+               writerASM.writer.add("cseg SEGMENT PUBLIC ;inicio seg. codigo");
+               writerASM.writer.add("ASSUME CS:cseg, DS:dseg");
+               writerASM.writer.add("strt:");
+               writerASM.writer.add("mov ax, dseg");
+               writerASM.writer.add("mov ds, ax");
 
-        while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR || actualSymbol.getSymbol() == symbolTable.IF
-                || actualSymbol.getSymbol() == symbolTable.DOTCOMMA || actualSymbol.getSymbol() == symbolTable.READLN ||
-                actualSymbol.getSymbol() == symbolTable.WRITE || actualSymbol.getSymbol() == symbolTable.WRITELN
-                ) {
-            C();
+               while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR || actualSymbol.getSymbol() == symbolTable.IF
+                       || actualSymbol.getSymbol() == symbolTable.DOTCOMMA || actualSymbol.getSymbol() == symbolTable.READLN ||
+                       actualSymbol.getSymbol() == symbolTable.WRITE || actualSymbol.getSymbol() == symbolTable.WRITELN
+                       ) {
+                   C();
+               }
+           }catch(NullPointerException e){
+               writerASM.writer.add("mov ah, 4Ch");
+               writerASM.writer.add("int 21h");
+               writerASM.writer.add("cseg ENDS ;fim seg. codigo");
+               writerASM.writer.add("END strt  ;fim programa ");
+               writerASM.createASM();
+               //writerASM.cleanUp();
+
         }
-        memory.resetTemp();
-        writerASM.writer.add("mov ah, 4Ch");
-        writerASM.writer.add("int 21h");
-        writerASM.writer.add("cseg ENDS ;fim seg. codigo");
-        writerASM.writer.add("END strt  ;fim programa ");
-        writerASM.createASM();
     }
 
     //proc D
@@ -385,10 +389,10 @@ public class SyntaticAnalysis {
         String id_temp = "";
         String value = "";
         Symbol tmp;
-        while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
-               || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
-                actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
-               actualSymbol.getSymbol() == symbolTable.WRITELN) {
+     ///   while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+      //         || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+     ///           actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+     //          actualSymbol.getSymbol() == symbolTable.WRITELN) {
 
             if (actualSymbol.getSymbol() == symbolTable.FOR) {
                 casaToken(symbolTable.FOR);
@@ -444,7 +448,7 @@ public class SyntaticAnalysis {
                 if (!Exp_type.equals(typeLogic)) {
                     errorIT();
                 }
-                writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
+                writerASM.writer.add("mov ax, DS:[" + Exp_end + "]; Aqui ");
                 writerASM.writer.add("cmp ax, 0");
                 writerASM.writer.add("je " + falseLabel);
                 casaToken(symbolTable.THEN);
@@ -773,15 +777,16 @@ public class SyntaticAnalysis {
                             errorEV();
                         }
                     }
-                } else if (!Exp_type.equals(tempToken.getTipo())) {
+                }else if (tempToken.getTipo().equals(typeCharacter) && (!Exp_type.equals(typeCharacter) || !Exp_type.equals(typeInteger))){
+                   errorIT();
+                } else if (tempToken.getTipo().equals(typeInteger)  && (!Exp_type.equals(typeInteger)
+                        || !Exp_type.equals(typeVectorInt))) {
                     errorIT();
-                } else if (tempToken.getTipo().equals(typeCharacter) && (!Exp_type.equals(typeCharacter) || !Exp_type.equals(typeInteger))) {
+                }else if(tempToken.getTipo().equals(typeVectorInt) && (!Exp_type.equals(typeInteger) ||
+                        !Exp_type.equals(typeInteger)) ){
                     errorIT();
-                } else if (tempToken.getTipo().equals(typeInteger) && !Exp_type.equals(typeInteger)) {
-                    errorIT();
-                } else if (tempToken.getTipo().equals(typeVectorInt)) {
-                    //errorIT();
                 }
+
                 writerASM.writer.add("mov al, DS:[" + Exp_end + "]");
                 if (Exp_type.equals(typeCharacter)) {
                     writerASM.writer.add("mov ah, 0");
@@ -792,7 +797,7 @@ public class SyntaticAnalysis {
             } else if (actualSymbol.getSymbol() == symbolTable.DOTCOMMA) {
                 casaToken(symbolTable.DOTCOMMA);
             }
-      }
+        memory.resetTemp();
 
     }
 
@@ -802,7 +807,7 @@ public class SyntaticAnalysis {
             casaToken(symbolTable.BEGIN);
             //   C();
 
-             while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+             while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
                    || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
                  actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
                actualSymbol.getSymbol() == symbolTable.WRITELN) {
@@ -810,7 +815,7 @@ public class SyntaticAnalysis {
             }
             casaToken(symbolTable.END);
         } else {
-            while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+            while (actualSymbol != null && actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
                     || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
                     actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
                     actualSymbol.getSymbol() == symbolTable.WRITELN) {
@@ -864,14 +869,14 @@ public class SyntaticAnalysis {
                     writerASM.writer.add("jl " + trueLabel);
                     break;
                 case 2:
-                    if (!Exp_type.equals(typeInteger) || !ExpS1_type.equals(typeInteger)) {
+                    if ((!Exp_type.equals(typeInteger) && !ExpS1_type.equals(typeInteger))) {
                         errorIT();
                     }
                     Exp_type = typeLogic;
                     writerASM.writer.add("jg " + trueLabel);
                     break;
                 case 3:
-                    if (!Exp_type.equals(typeInteger) || !ExpS1_type.equals(typeInteger)) {
+                    if (!Exp_type.equals(typeInteger) && !ExpS1_type.equals(typeInteger)) {
                         errorIT();
                     }
                     Exp_type = typeLogic;
