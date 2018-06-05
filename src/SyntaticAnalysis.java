@@ -108,6 +108,9 @@ public class SyntaticAnalysis {
                 ) {
             C();
         }
+        memory.resetTemp();
+        writerASM.writer.add("mov ah, 4Ch");
+        writerASM.writer.add("int 21h");
         writerASM.writer.add("cseg ENDS ;fim seg. codigo");
         writerASM.writer.add("END strt  ;fim programa ");
         writerASM.createASM();
@@ -790,12 +793,6 @@ public class SyntaticAnalysis {
                 casaToken(symbolTable.DOTCOMMA);
             }
       }
-        memory.resetTemp();
-        writerASM.writer.add("mov ah, 4Ch");
-        writerASM.writer.add("int 21h");
-        writerASM.writer.add("cseg ENDS ;fim seg. codigo");
-        writerASM.writer.add("END strt ;fim programa");
-        writerASM.createASM();
 
     }
 
