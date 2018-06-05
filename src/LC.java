@@ -10,11 +10,11 @@ import java.io.InputStreamReader;
 
 public class LC {
     static BufferedReader archive;
-    static SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis();
 
     public static void main(String[] args) {
+         SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis(args[1]);
+
         String nomArq;
-        WriterASM writerASM;
         if(args.length < 1){
             System.out.println("Numero de argumentos invalido!");
             System.exit(5);
@@ -36,7 +36,6 @@ public class LC {
         while (!syntaticAnalysis.lexicalAnalysis.eof) {
             try {
                // readArchive(args[0]);
-                writerASM = new WriterASM();
                 syntaticAnalysis.startParsing(archive);
             } catch (Exception e) {
                // System.err.println("Erro " + e.getMessage());

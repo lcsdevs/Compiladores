@@ -10,9 +10,9 @@ public class WriterASM {
     public BufferedWriter archive;
     public String archiveName = "";
 
-    public WriterASM() throws Exception{
+    public WriterASM(String name) throws Exception{
         writer = new ArrayList<>();
-        archive = new BufferedWriter(new FileWriter("c:/8086/codigo.asm"));
+        archive = new BufferedWriter(new FileWriter("c:/8086/"+name+""));
     }
 
     public void createASM() throws IOException{
