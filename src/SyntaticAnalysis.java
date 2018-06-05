@@ -115,7 +115,7 @@ public class SyntaticAnalysis {
                writerASM.writer.add("cseg ENDS ;fim seg. codigo");
                writerASM.writer.add("END strt  ;fim programa ");
                writerASM.createASM();
-               //writerASM.cleanUp();
+               writerASM.cleanUp();
 
         }
     }
@@ -779,8 +779,7 @@ public class SyntaticAnalysis {
                     }
                 }else if (tempToken.getTipo().equals(typeCharacter) && (!Exp_type.equals(typeCharacter) || !Exp_type.equals(typeInteger))){
                    errorIT();
-                } else if (tempToken.getTipo().equals(typeInteger)  && (!Exp_type.equals(typeInteger)
-                        || !Exp_type.equals(typeVectorInt))) {
+                } else if (tempToken.getTipo().equals(typeInteger)  && (!Exp_type.equals(typeInteger))){
                     errorIT();
                 }else if(tempToken.getTipo().equals(typeVectorInt) && (!Exp_type.equals(typeInteger) ||
                         !Exp_type.equals(typeInteger)) ){
