@@ -404,13 +404,13 @@ public class SyntaticAnalysis {
                 id_temp = actualSymbol.getTipo();
                 String beginLabel = label.newLabel();
                 String endLabel = label.newLabel();
-                //  writerASM.writer.add(beginLabel+":");
+                  writerASM.writer.add(beginLabel+":");
 
                 casaToken(symbolTable.ID);
                 casaToken(symbolTable.ATRIB);
 
                 Exp();
-                //   writerASM.writer.add("mov ax, DS:["+actualSymbol.getEndereco()+"]");
+                   writerASM.writer.add("mov ax, DS:["+actualSymbol.getEndereco()+"]");
                 if (!Exp_type.equals(typeInteger)) {
                     errorIT();
                 }
@@ -418,15 +418,15 @@ public class SyntaticAnalysis {
                 casaToken(symbolTable.TO);
 
                 Exp();
-                //     writerASM.writer.add("mov bx, DS:["+Exp_end+"]");
+                   writerASM.writer.add("mov bx, DS:["+Exp_end+"]");
                 if (!Exp_type.equals(typeInteger)) {
                     errorIT();
                 }
                 if (actualSymbol.getSymbol() == symbolTable.STEP) {
                     casaToken(symbolTable.STEP);
                     tempToken = actualSymbol;
-                    //          writerASM.writer.add("sub cx, 1");
-                    //          writerASM.writer.add("jmp "+beginLabel);
+                           writerASM.writer.add("sub cx, 1");
+                              writerASM.writer.add("jmp "+beginLabel);
                     casaToken(symbolTable.VALOR);
                     if (!tempToken.getTipo().equals(typeInteger)) {
                         errorIT();
@@ -434,11 +434,11 @@ public class SyntaticAnalysis {
                 }
                 casaToken(symbolTable.DO);
                 C1();
-                //       writerASM.writer.add("cmp ax, bx");
-                //       writerASM.writer.add("jg "+endLabel);
-                //       writerASM.writer.add("add ax, 1");
-                //       writerASM.writer.add("jmp "+beginLabel);
-                //       writerASM.writer.add(endLabel+":");
+                       writerASM.writer.add("cmp ax, bx");
+                       writerASM.writer.add("jg "+endLabel);
+                      writerASM.writer.add("add ax, 1");
+                      writerASM.writer.add("jmp "+beginLabel);
+                      writerASM.writer.add(endLabel+":");
 
             } else if (actualSymbol.getSymbol() == symbolTable.IF) {
                 casaToken(symbolTable.IF);
