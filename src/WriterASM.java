@@ -12,7 +12,7 @@ public class WriterASM {
 
     public WriterASM(String name) throws Exception{
         writer = new ArrayList<>();
-        archive = new BufferedWriter(new FileWriter("d:/8086/"+name+""));
+        archive = new BufferedWriter(new FileWriter("c:/8086/"+name+""));
     }
 
     public void createASM() throws IOException{
