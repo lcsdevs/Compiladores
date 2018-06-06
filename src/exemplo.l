@@ -1,9 +1,7 @@
-int y,x;
- x<-4;
+int n;
+final MAXITER=10;
 
-if x<3 then 
-  write("uhull if!");
-
-else 
-  write("uhull! else!");
-  
+  for n<-1 to MAXITER do 
+    begin
+       writeln("Ola' Pedro");
+    end

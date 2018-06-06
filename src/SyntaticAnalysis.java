@@ -407,11 +407,11 @@ public class SyntaticAnalysis {
             String beginLabel = label.newLabel();
             String endLabel = label.newLabel();
             Exp();
-            writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
-            writerASM.writer.add("mov DS:[" + actualSymbol.getEndereco() + "],ax");
+           // writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
+           // writerASM.writer.add("mov DS:[" + actualSymbol.getEndereco() + "],ax");
             writerASM.writer.add(beginLabel + ":");
 
-            //writerASM.writer.add("mov ax, DS:[" + actualSymbol.getEndereco() + "]");
+           // writerASM.writer.add("mov ax, DS:[" + actualSymbol.getEndereco() + "]");
             tempToken.setEndereco(Exp_end);
             if (!Exp_type.equals(typeInteger)) {
                 errorIT();
@@ -421,7 +421,7 @@ public class SyntaticAnalysis {
 
             Exp();
             writerASM.writer.add("mov bx, DS:[" + Exp_end + "]");
-            System.out.println(Exp_end +" "+ ExpS_end +" "+ T_end +" "+ F_end + " " + F_end);
+            //System.out.println(Exp_end +" "+ ExpS_end +" "+ T_end +" "+ F_end + " " + F_end);
             writerASM.writer.add("mov ax, DS:[" + tempToken.getEndereco() + "]");
             writerASM.writer.add("cmp ax, bx");
             writerASM.writer.add("jg " + endLabel);
@@ -1202,7 +1202,7 @@ public class SyntaticAnalysis {
                 errorUnT(actualSymbol.getLexema());
             }
             F_type = actualSymbol.getTipo();
-            tempToken = actualSymbol;
+           // tempToken = actualSymbol;
             F_end = actualSymbol.getEndereco();
             casaToken(symbolTable.ID);
             if (actualSymbol.getSymbol() == symbolTable.ACOLCHETES) {
@@ -1220,6 +1220,7 @@ public class SyntaticAnalysis {
                 casaToken(symbolTable.FCOLCHETES);
             }else {
                 if (actualSymbol.getSymbol() == symbolTable.ID) {
+                    System.out.println(F_end + actualSymbol.endereco);
                     F_end = actualSymbol.endereco;
                 }
             }
