@@ -406,9 +406,12 @@ public class SyntaticAnalysis {
             casaToken(symbolTable.ATRIB);
             String beginLabel = label.newLabel();
             String endLabel = label.newLabel();
-            writerASM.writer.add(beginLabel + ":");
+            writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
+            writerASM.writer.add("mov DS:[" + actualSymbol.getEndereco() + "],ax");
             Exp();
-            writerASM.writer.add("mov ax, DS:[" + actualSymbol.getEndereco() + "]");
+            writerASM.writer.add(beginLabel + ":");
+
+            //writerASM.writer.add("mov ax, DS:[" + actualSymbol.getEndereco() + "]");
             tempToken.setEndereco(Exp_end);
             if (!Exp_type.equals(typeInteger)) {
                 errorIT();
@@ -446,6 +449,7 @@ public class SyntaticAnalysis {
                         C();
                     }
                     writerASM.writer.add("add ax, 1");
+                    writerASM.writer.add("mov DS:[" + tempToken.getEndereco() + "],ax");
                     writerASM.writer.add("jmp " + beginLabel);
                     writerASM.writer.add(endLabel + ":");
                     casaToken(symbolTable.END);
@@ -702,6 +706,11 @@ public class SyntaticAnalysis {
                 writerASM.writer.add("mov dx, " + Exp_end);
                 writerASM.writer.add("mov ah, 09h");
                 writerASM.writer.add("int 21h");
+                writerASM.writer.add("mov ah, 02h");
+                writerASM.writer.add("mov dl, 0Dh");
+                writerASM.writer.add("int 21h");
+                writerASM.writer.add("mov DL, 0Ah");
+                writerASM.writer.add("int 21h");
             } else {
                 writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
                 writerASM.writer.add("mov di, " + StringAdd);
@@ -753,6 +762,12 @@ public class SyntaticAnalysis {
                     writerASM.writer.add("mov dx, " + Exp_end);
                     writerASM.writer.add("mov ah, 09h");
                     writerASM.writer.add("int 21h");
+                    writerASM.writer.add("mov ah, 02h");
+                    writerASM.writer.add("mov dl, 0Dh");
+                    writerASM.writer.add("int 21h");
+                    writerASM.writer.add("mov DL, 0Ah");
+                    writerASM.writer.add("int 21h");
+
                 } else {
                     writerASM.writer.add("mov ax, DS:[" + Exp_end + "]");
                     writerASM.writer.add("mov di, " + StringAdd);
@@ -793,6 +808,7 @@ public class SyntaticAnalysis {
                     writerASM.writer.add("int 21h");
                     writerASM.writer.add("mov DL, 0Ah");
                     writerASM.writer.add("int 21h");
+;
                 }
             }
 
