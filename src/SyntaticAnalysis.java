@@ -418,7 +418,7 @@ public class SyntaticAnalysis {
 
             Exp();
             writerASM.writer.add("mov bx, DS:[" + Exp_end + "]");
-            writerASM.writer.add("mov bx, DS:[" + tempToken.getEndereco() + "]");
+            writerASM.writer.add("mov ax, DS:[" + tempToken.getEndereco() + "]");
             writerASM.writer.add("cmp ax, bx");
             writerASM.writer.add("jg " + endLabel);
             if (!Exp_type.equals(typeInteger)) {
@@ -437,10 +437,29 @@ public class SyntaticAnalysis {
                 }
             }
             casaToken(symbolTable.DO);
-                C1();
-            writerASM.writer.add("add ax, 1");
-            writerASM.writer.add("jmp " + beginLabel);
-            writerASM.writer.add(endLabel + ":");
+                if(actualSymbol.getSymbol() == symbolTable.BEGIN){
+                    casaToken(symbolTable.BEGIN);
+                    while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+                            || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+                            actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+                            actualSymbol.getSymbol() == symbolTable.WRITELN) {
+                        C();
+                    }
+                    writerASM.writer.add("add ax, 1");
+                    writerASM.writer.add("jmp " + beginLabel);
+                    writerASM.writer.add(endLabel + ":");
+                    casaToken(symbolTable.END);
+                }else{
+                    while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+                            || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+                            actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+                            actualSymbol.getSymbol() == symbolTable.WRITELN) {
+                        C();
+                    }
+                    writerASM.writer.add("add ax, 1");
+                    writerASM.writer.add("jmp " + beginLabel);
+                    writerASM.writer.add(endLabel + ":");
+                }
 
         } else if (actualSymbol.getSymbol() == symbolTable.IF) {
             casaToken(symbolTable.IF);
@@ -454,13 +473,47 @@ public class SyntaticAnalysis {
             writerASM.writer.add("cmp ax, 0");
             writerASM.writer.add("je " + falseLabel);
             casaToken(symbolTable.THEN);
-            C1();
+            if(actualSymbol.getSymbol() == symbolTable.BEGIN){
+                casaToken(symbolTable.BEGIN);
+                while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+                        || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+                        actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+                        actualSymbol.getSymbol() == symbolTable.WRITELN) {
+                    C();
+                }
+                casaToken(symbolTable.END);
+            }else{
+                while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+                        || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+                        actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+                        actualSymbol.getSymbol() == symbolTable.WRITELN) {
+                    C();
+                }
+            }
             if (actualSymbol.getSymbol() == symbolTable.ELSE) {
                 casaToken(symbolTable.ELSE);
                 writerASM.writer.add("jmp " + endLabel);
                 writerASM.writer.add(falseLabel + ":");
-                C1();
-                writerASM.writer.add(endLabel + ":");
+                if(actualSymbol.getSymbol() == symbolTable.BEGIN){
+                    casaToken(symbolTable.BEGIN);
+                    while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+                            || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+                            actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+                            actualSymbol.getSymbol() == symbolTable.WRITELN) {
+                        C();
+                    }
+                    writerASM.writer.add(endLabel + ":");
+                    casaToken(symbolTable.END);
+                }else{
+                    while (actualSymbol.getSymbol() == symbolTable.ID || actualSymbol.getSymbol() == symbolTable.FOR
+                            || actualSymbol.getSymbol() == symbolTable.IF || actualSymbol.getSymbol() == symbolTable.DOTCOMMA ||
+                            actualSymbol.getSymbol() == symbolTable.READLN || actualSymbol.getSymbol() == symbolTable.WRITE ||
+                            actualSymbol.getSymbol() == symbolTable.WRITELN) {
+                        C();
+                    }
+                    writerASM.writer.add(endLabel + ":");
+                }
+
             }
 
         } else if (actualSymbol.getSymbol() == symbolTable.READLN) {
